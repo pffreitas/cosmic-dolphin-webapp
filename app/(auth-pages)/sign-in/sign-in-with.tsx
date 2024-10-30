@@ -8,7 +8,11 @@ const SignInWith = (props: { provider: Provider }) => {
     const supabase = createClient();
 
     const handleSignIn = async (provider: Provider) => {
-        const { error } = await supabase.auth.signInWithOAuth({provider: provider})
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: provider, options: {
+                redirectTo: process.env.NEXT_PUBLIC_REDIRECT_URL,
+            },
+        })
         if (error) console.error('Error: ', error.message)
     }
 
