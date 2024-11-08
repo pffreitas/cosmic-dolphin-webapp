@@ -1,8 +1,10 @@
 import { createClient } from "@/utils/supabase/server";
 import { useEffect, useState } from "react";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 async function fetchNote(noteId: string, token: string) {
-  const response = await fetch(`http://localhost:8080/notes/${noteId}`, {
+  const response = await fetch(`${API_URL}/notes/${noteId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -11,7 +13,13 @@ async function fetchNote(noteId: string, token: string) {
   return data;
 }
 
-export default async function Index({ params }: { params: { noteId: string } }) {
+interface PageProps {
+  params: {
+    noteId: string;
+  };
+}
+
+export default async function Index({ params }: PageProps) {
   const supabase = await createClient();
   const { noteId } = await params;
   const { data: { session } } = await supabase.auth.getSession();
