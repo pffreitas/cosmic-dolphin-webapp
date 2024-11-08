@@ -14,9 +14,9 @@ async function fetchNote(noteId: string, token: string) {
 }
 
 interface PageProps {
-  params: {
+  params: Promise<{
     noteId: string;
-  };
+  }>;
 }
 
 export default async function Index({ params }: PageProps) {
@@ -30,7 +30,7 @@ export default async function Index({ params }: PageProps) {
     <>
       <h1>{note.title}</h1>
       {note && <p>{note.summary}</p>}
-      {note.sections.map(s => (
+      {note.sections.map((s: any) => (
         <div key={s.id}>
           <h2>{s.content.title}</h2>
           <p>{s.content.text}</p>
