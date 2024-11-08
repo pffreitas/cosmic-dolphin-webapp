@@ -28,11 +28,11 @@ export default async function Index({ params }: PageProps) {
 
   return (
     <>
-      <h1>{note.title}</h1>
+      <h1 className="font-bold text-3xl mb-4">{note.title}</h1>
       {note && <p>{note.summary}</p>}
       {note.sections.map((s: any) => (
         <div key={s.id}>
-          <h2>{s.content.title}</h2>
+          <h2 className="text-2xl mb-2">{s.content.title}</h2>
           <p>{s.content.text}</p>
         </div>
       ))}
