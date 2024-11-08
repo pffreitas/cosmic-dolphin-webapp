@@ -3,7 +3,7 @@ export default function Index() {
  
   return (
     <>
-      <h1>Note</h1>
+      <h1>Notes</h1>
     </>
   );
 }
