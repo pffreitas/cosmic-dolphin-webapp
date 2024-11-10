@@ -1,3 +1,4 @@
+import { cosmicGet } from "@/lib/repository/base";
 import { createClient } from "@/utils/supabase/server";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
