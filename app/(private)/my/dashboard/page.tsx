@@ -1,5 +1,5 @@
 import { fetchNotes } from "@/lib/repository/repo"
-import { Note } from "@pffreitas/cosmic-dolphin-apispec";
+import { Note } from "@cosmic-dolphin/api";
 
 
 export default async function Index() {
