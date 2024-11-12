@@ -2,8 +2,11 @@
 
 import { encodedRedirect } from "@/utils/utils";
 import { createClient } from "@/utils/supabase/server";
+
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+import { cosmicPost } from "@/lib/repository/base";
 
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
@@ -128,3 +131,16 @@ export const signOutAction = async () => {
   await supabase.auth.signOut();
   return redirect("/sign-in");
 };
+
+
+export const submitPrompt = async (formData: FormData) => {
+  console.log('>>>>>>>>', formData.get("prompt"));
+
+  await cosmicPost('insert-resource',
+    {
+      "type": "webpage",
+      "source": formData.get("prompt")
+    })
+
+  revalidatePath('/my/dashboard');
+}
