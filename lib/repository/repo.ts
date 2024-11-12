@@ -1,5 +1,5 @@
 import { cosmicGet } from "./base";
-import { Configuration, Note, NotesApi } from "@pffreitas/cosmic-dolphin-apispec";
+import { Configuration, Note, NotesApi } from "@cosmic-dolphin/api";
 import { createClient } from "@/utils/supabase/server";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
