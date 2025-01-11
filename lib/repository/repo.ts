@@ -1,5 +1,4 @@
-import { cosmicGet } from "./base";
-import { Configuration, Note, NotesApi } from "@cosmic-dolphin/api";
+import { Configuration, Note, NotesApi, NoteType } from "@cosmic-dolphin/api";
 import { createClient } from "@/utils/supabase/server";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -10,18 +9,25 @@ export async function fetchNotes() {
     const accessToken = session?.access_token || '';
 
     const notesApi = new NotesApi(new Configuration({ basePath: API_URL, accessToken }));
-    const notes = await notesApi.notesList();
-    console.log({ notes });
 
-    // const data = await cosmicGet(`/notes`, (n) => {
-    //     const nt: Note = null;
-    //     console.log(">>>>>>>> notes", { n })
-    //     return n;
-    // });
-    return notes;
+    try {
+        const notes = await notesApi.notesList();
+        return notes;
+    } catch (error) {
+        console.error('Error fetching notes', error);
+
+    }
+    return [];
 }
 
 
-export async function submitPrompt(text: string) {
+export async function createNote(body: string, noteType: NoteType): Promise<Note> {
+    const supabase = await createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    const accessToken = session?.access_token || '';
 
+    const notesApi = new NotesApi(new Configuration({ basePath: API_URL, accessToken }));
+
+    const note = await notesApi.notesCreate({ createNoteRequest: { body, type: noteType } });
+    return note;
 }

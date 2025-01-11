@@ -6,7 +6,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@cosmic-dolphin/api": "^1.0.5",
+    "@cosmic-dolphin/api": "^1.0.20250111020822",
     "@radix-ui/react-checkbox": "^1.1.1",
     "@radix-ui/react-dropdown-menu": "^2.1.1",
     "@radix-ui/react-label": "^2.1.0",
@@ -22,7 +22,8 @@
     "next-themes": "^0.3.0",
     "prettier": "^3.3.3",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "swr": "^2.3.0"
   },
   "devDependencies": {
     "@types/node": "20.10.6",

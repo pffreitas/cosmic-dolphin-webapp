@@ -1,4 +1,4 @@
-import { cosmicGet } from "@/lib/repository/base";
+import { FetchEverySecondSWR } from "@/components/pipeline/pipeline-loader";
 import { createClient } from "@/utils/supabase/server";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -28,6 +28,7 @@ export default async function Index({ params }: PageProps) {
 
   return (
     <>
+      {note && <FetchEverySecondSWR noteId={note.id} />}
       <h1 className="font-bold text-3xl mb-4">{note.title}</h1>
       <div className="w-full p-[1px] bg-gradient-to-r from-transparent via-foreground/10 to-transparent mb-4" />
       {note && <p>{note.summary}</p>}

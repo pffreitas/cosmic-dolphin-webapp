@@ -5,6 +5,7 @@ import { GeistSans } from "geist/font/sans";
 import { ThemeProvider } from "next-themes";
 import { SubmitButton } from "@/components/submit-button";
 import Link from "next/link";
+import ToggleButtonGroup from "@/components/toggle-button-group";
 import "./globals.css";
 
 export default function RootLayout({
@@ -12,9 +13,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-
-
-
   return (
     <html lang="en" className={GeistSans.className} suppressHydrationWarning>
       <body className="bg-background text-foreground">
@@ -48,6 +46,7 @@ export default function RootLayout({
               <footer className="bg-white w-full fixed bottom-0 flex border-t text-sm gap-8 px-16 py-8">
                 <div className="shadow-md w-full rounded-md p-5">
                   <form className="flex gap-2">
+                    <ToggleButtonGroup />
                     <textarea name="prompt" className="w-full max-w focus:outline-none focus:border-0 resize-none" rows={1} placeholder="Type something here"></textarea>
                     <SubmitButton formAction={submitPrompt}>Send</SubmitButton>
                   </form>

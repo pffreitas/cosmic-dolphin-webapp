@@ -14,9 +14,7 @@ const NoteCard = ({ note }: { note: Note }) => {
 }
 
 export default async function Index() {
-
     const notes = await fetchNotes();
-    console.log({ notes });
 
     return (
         <div>
