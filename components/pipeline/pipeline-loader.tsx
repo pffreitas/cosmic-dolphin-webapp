@@ -30,7 +30,6 @@ export const PipelineLoading: React.FC<PipelineLoadingProps> = ({ accessToken, n
     const loading = lastPipe?.status !== 'complete';
 
     useEffect(() => {
-        console.log({ pipelines });
         if (!loading && pipelines) {
             if (onCompleted) {
                 onCompleted();
