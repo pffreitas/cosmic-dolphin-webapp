@@ -21,8 +21,6 @@ export default function Note({ initialNote, noteId, accessToken }: NoteProps) {
         setNote(noteData);
     }
 
-    console.log({isLoading})
-
     useEffect(() => {
         if (!isLoading) {
             fetchNoteData();
@@ -30,7 +28,6 @@ export default function Note({ initialNote, noteId, accessToken }: NoteProps) {
     }, [isLoading, accessToken, noteId]);
 
     const onCompleted = () => {
-        console.log('completed');
         setIsLoading(false);
     }
 

@@ -21,7 +21,6 @@ export default function ChatBox() {
     });
 
     const onSubmit = (data: SubmitPromptFormData) => {
-        console.log("Submitted Data:", data);
         submitPrompt(data);
         reset();
     };

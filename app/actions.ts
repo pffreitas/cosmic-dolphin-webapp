@@ -142,7 +142,5 @@ export const submitPrompt = async (data: SubmitPromptFormData) => {
   const body = data.prompt?.toString() || '';
   const notes = await createNote(body, NoteType.Knowledge);
 
-  console.log(notes);
-  
   return redirect(`/notes/${notes.id}`);
 }
