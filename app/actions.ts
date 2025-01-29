@@ -7,6 +7,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createNote } from "@/lib/repository/repo";
 import { NoteType } from "@cosmic-dolphin/api";
+import { FieldValues } from "react-hook-form";
 
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
@@ -133,11 +134,13 @@ export const signOutAction = async () => {
 };
 
 
-export const submitPrompt = async (formData: FormData) => {
-  const body = formData.get("prompt")?.toString() || '';
-  const typeString = formData.get("type")?.toString();
-  const type = typeString as NoteType || NoteType.Knowledge;
-  const notes = await createNote(body, type);
+export interface SubmitPromptFormData {
+  prompt: string;
+}
+
+export const submitPrompt = async (data: SubmitPromptFormData) => {
+  const body = data.prompt?.toString() || '';
+  const notes = await createNote(body, NoteType.Knowledge);
 
   console.log(notes);
   
