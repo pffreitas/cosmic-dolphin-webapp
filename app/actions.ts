@@ -5,10 +5,8 @@ import { createClient } from "@/utils/supabase/server";
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
-import { cosmicPost } from "@/lib/repository/base";
 import { createNote } from "@/lib/repository/repo";
-import { NoteType, NoteTypeFromJSON } from "@cosmic-dolphin/api";
+import { NoteType } from "@cosmic-dolphin/api";
 
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
@@ -138,7 +136,7 @@ export const signOutAction = async () => {
 export const submitPrompt = async (formData: FormData) => {
   const body = formData.get("prompt")?.toString() || '';
   const typeString = formData.get("type")?.toString();
-  const type = typeString as NoteType || NoteType.Chatter;
+  const type = typeString as NoteType || NoteType.Knowledge;
   const notes = await createNote(body, type);
 
   console.log(notes);

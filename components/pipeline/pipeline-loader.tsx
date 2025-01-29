@@ -1,31 +1,58 @@
 "use client";
 
 import useSWR from "swr";
-import { fetchPipelines } from "@/lib/repository/pipelines.repo";
+import { LoaderCircle } from "lucide-react";
+import { fetchPipelines } from "@/lib/repository/pipeline.repo";
+import _ from 'lodash';
+import { useEffect } from "react";
+import './pipeline-loader.css';
 
-function fetcher(noteId: number): (url: string) => any {
-    return async function fetcher(url: string) {
-        const pipelines = await fetchPipelines(noteId);
-        return pipelines;
-    }
-}
-
-type Props = {
+type PipelineLoadingProps = {
+    accessToken: string;
     noteId: number;
+    onCompleted?: () => void;
 }
 
-export const FetchEverySecondSWR : React.FC<Props> = ({noteId}) => {
-    const { data, error } = useSWR("/api/data", fetcher(noteId), {
+const fetcher = (accessToken: string, noteId: number) => async () => {
+    return fetchPipelines(noteId, accessToken);
+}
+
+export const PipelineLoading: React.FC<PipelineLoadingProps> = ({ accessToken, noteId, onCompleted }) => {
+    const { data: pipelines, error } = useSWR(`notes/${noteId}/pipelines`, fetcher(accessToken, noteId), {
         refreshInterval: 1000,
     });
 
-    if (error) return <div>Error loading data</div>;
-    if (!data) return <div>Loading...</div>;
+    const lastPipe = _.chain(pipelines ?? [])
+        .sortBy('createdAt')
+        .first()
+        .value();
+
+    const loading = lastPipe?.status !== 'complete';
+
+    useEffect(() => {
+        console.log({ pipelines });
+        if (!loading && pipelines) {
+            if (onCompleted) {
+                onCompleted();
+            }
+        }
+    }, [loading, pipelines]);
+
+    // if (error) return <div>Error loading pipelines</div>;
+    if (!pipelines) return <div>Loading...</div>;
+
+    if (pipelines.length === 0) {
+        return
+    }
+
+    const lastStage = _.chain(lastPipe.stages).last().value();
 
     return (
         <div>
-            <h1>Data (SWR) fetched every second:</h1>
-            <pre>{JSON.stringify(data, null, 2)}</pre>
+            <p className="flex items-center gap-2 font-karla shimmer">
+                <LoaderCircle size={16} className="animate-spin" /> {/* Apply the animation class */}
+                {lastStage.key}
+            </p>
         </div>
     );
 }

@@ -1,17 +1,7 @@
-import { FetchEverySecondSWR } from "@/components/pipeline/pipeline-loader";
+import Note from "@/components/notes/notes";
+import { fetchNote } from "@/lib/repository/notes.repo";
 import { createClient } from "@/utils/supabase/server";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-async function fetchNote(noteId: string, token: string) {
-  const response = await fetch(`${API_URL}/notes/${noteId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  const data = await response.json();
-  return data;
-}
+import _ from 'lodash';
 
 interface PageProps {
   params: Promise<{
@@ -23,21 +13,15 @@ export default async function Index({ params }: PageProps) {
   const supabase = await createClient();
   const { noteId } = await params;
   const { data: { session } } = await supabase.auth.getSession();
+  const accessToken = session?.access_token || '';
 
-  const note = await fetchNote(noteId, session?.access_token || '');
+  const note = await fetchNote(accessToken, Number(noteId));
+
+  if (!note || !note.id) {
+    return <div>Note not found</div>;
+  };
 
   return (
-    <>
-      {note && <FetchEverySecondSWR noteId={note.id} />}
-      <h1 className="font-bold text-3xl mb-4">{note.title}</h1>
-      <div className="w-full p-[1px] bg-gradient-to-r from-transparent via-foreground/10 to-transparent mb-4" />
-      {note && <p>{note.summary}</p>}
-      {note.sections.map((s: any) => (
-        <div key={s.id}>
-          <h2 className="text-2xl mb-2">{s.content.title}</h2>
-          <p>{s.content.text}</p>
-        </div>
-      ))}
-    </>
+    <Note initialNote={note} noteId={note.id} accessToken={accessToken} />
   );
 }
