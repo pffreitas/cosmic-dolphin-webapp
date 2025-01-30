@@ -5,7 +5,7 @@ import { fetchPipelines } from "@/lib/repository/pipeline.repo";
 import type { Note } from "@cosmic-dolphin/api";
 import _ from 'lodash';
 import { fetchNote } from '@/lib/repository/notes.repo';
-
+import moment from 'moment';
 interface NoteProps {
     initialNote: Note | null;
     noteId: number;
@@ -35,6 +35,8 @@ export default function Note({ initialNote, noteId, accessToken }: NoteProps) {
         return <div>Note not found</div>;
     }
 
+    const tags = note.tags.split(',').map((t: string) => t.trim());
+
     return (
         <div key={note.id}>
             {isLoading && <PipelineLoading accessToken={accessToken} noteId={note.id} onCompleted={onCompleted} />}
@@ -42,6 +44,12 @@ export default function Note({ initialNote, noteId, accessToken }: NoteProps) {
                 <div key={note.id}>
                     <h1 className="font-bold font-karla text-3xl mb-4">{note.title}</h1>
                     <div className="w-full p-[1px] bg-gradient-to-r from-transparent via-foreground/10 to-transparent mb-4" />
+                    <div className="flex flex-wrap gap-2 mb-4">
+                        {tags.map((t: string) => (
+                            <span key={t} className="bg-foreground/10 text-foreground text-[0.65rem] uppercase text-gray-600 px-2 py-1 rounded-sm">{t}</span>
+                        ))}
+                    </div>
+                    <p className="text-sm text-gray-500 mb-4">Created {moment(note.createdAt).fromNow()}</p>
                     <p>{note.summary}</p>
                     {note.sections.map((s: any) => (
                         <div key={s.id}>
