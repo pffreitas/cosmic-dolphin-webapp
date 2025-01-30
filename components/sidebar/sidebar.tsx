@@ -40,11 +40,12 @@ export default function Sidebar() {
                 }
             </button >
 
-            {/* Logo */}
-            < div className="mb-8 flex gap-2 items-center" >
-                <div className="w-8 h-8 bg-blue-600 rounded-lg" />
-                {!isCollapsed && <h2 className='font-karla text-md font-semibold text-gray-800 tracking-wider'>Cosmic Dolphin</h2>}
-            </div >
+            <div className="mb-8">
+                <Link href="/" className="flex gap-2 items-center ">
+                <div className="text-2xl">🐬</div>
+                {!isCollapsed && <h2 className='font-noto text-lg font-normal text-gray-800'>Cosmic Dolphin</h2>}
+                </Link>
+            </div>
 
             {/* Main Navigation */}
             < nav className="space-y-1 mb-8" >

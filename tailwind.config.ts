@@ -20,6 +20,7 @@ const config = {
     extend: {
       fontFamily: {
         'karla': ['Karla', 'sans-serif'],
+        'noto': ['Noto sans', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
