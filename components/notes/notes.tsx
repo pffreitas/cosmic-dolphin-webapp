@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { PipelineLoading } from "@/components/pipeline/pipeline-loader";
 import { fetchPipelines } from "@/lib/repository/pipeline.repo";
-import type { Note } from "@cosmic-dolphin/api";
+import type { Note, NoteSection } from "@cosmic-dolphin/api";
 import _ from 'lodash';
 import { fetchNote } from '@/lib/repository/notes.repo';
 import moment from 'moment';
@@ -50,9 +50,9 @@ export default function Note({ initialNote, noteId, accessToken }: NoteProps) {
                         ))}
                     </div>
                     <p className="text-sm text-gray-500 mb-4">Created {moment(note.createdAt).fromNow()}</p>
-                    <p>{note.summary}</p>
-                    {note.sections.map((s: any) => (
-                        <div key={s.id}>
+                    <p className="mb-4">{note.summary}</p>
+                    {note.sections.map((s) => (
+                        <div  className="mb-4">
                             <h2 className="font-karla text-2xl mb-2">{s.content.title}</h2>
                             <p>{s.content.text}</p>
                         </div>

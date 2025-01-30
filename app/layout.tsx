@@ -10,9 +10,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-
-
-
   return (
     <html lang="en" className={GeistSans.className} suppressHydrationWarning>
       <head>
@@ -27,14 +24,13 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <main className="flex h-screen bg-gray-50">
+          <main className="flex min-h-screen bg-gray-50">
             <Sidebar />
 
             <div className="flex-1 flex flex-col">
               <header className="bg-white border-b border-gray-200 p-4">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex-1 flex">
-                    
                   </div>
                   <div className="flex items-center space-x-4">
                     <HeaderAuth />
