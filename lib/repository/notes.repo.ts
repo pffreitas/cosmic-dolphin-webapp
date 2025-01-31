@@ -5,7 +5,7 @@ export async function fetchNote(accessToken: string, noteId: number): Promise<No
     const notesApi = new NotesApi(new Configuration({ basePath: API_BASE_URL, accessToken }));
 
     try {
-        const note = await notesApi.notesRead({ id: String(noteId) });
+        const note = await notesApi.notesFindById({ id: String(noteId) });
         return note;
     } catch (error) {
         console.error('Error fetching pipelines', error);

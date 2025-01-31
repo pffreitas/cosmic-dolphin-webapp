@@ -6,7 +6,7 @@ export async function fetchPipelines(refId: number, accessToken: string): Promis
     const pipelinesApi = new PipelinesApi(new Configuration({ basePath: API_BASE_URL, accessToken }));
 
     try {
-        const pipelines = await pipelinesApi.pipelinesFindPipelinesByRefId({ refId });
+        const pipelines = await pipelinesApi.pipelinesFindByRefId({ refId: refId });
         return pipelines;
     } catch (error) {
         console.error('Error fetching pipelines', error);

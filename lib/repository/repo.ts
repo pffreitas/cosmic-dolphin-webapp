@@ -11,7 +11,7 @@ export async function fetchNotes() {
     const notesApi = new NotesApi(new Configuration({ basePath: API_URL, accessToken }));
 
     try {
-        const notes = await notesApi.notesList();
+        const notes = await notesApi.notesFindAll();
         return notes;
     } catch (error) {
         console.error('Error fetching notes', error);

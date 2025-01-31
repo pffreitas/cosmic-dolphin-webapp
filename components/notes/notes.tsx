@@ -35,7 +35,7 @@ export default function Note({ initialNote, noteId, accessToken }: NoteProps) {
         return <div>Note not found</div>;
     }
 
-    const tags = note.tags.split(',').map((t: string) => t.trim());
+    const tags = note.tags;
 
     return (
         <div key={note.id}>
