@@ -18,11 +18,10 @@ const NoteCard = ({ note }: { note: Note }) => {
 export default async function Index() {
     const notes = await fetchNotes();
 
-
     return (
         <div>
             <div className="flex gap-2 flex-col">
-                {notes.map((note: Note) => (
+                {notes?.map((note: Note) => (
                     <>
                         <NoteCard key={note.id} note={note} />
                         <div className="border-b border-gray-300"></div>

@@ -45,13 +45,13 @@ export default function Note({ initialNote, noteId, accessToken }: NoteProps) {
                     <h1 className="font-bold font-karla text-3xl mb-4">{note.title}</h1>
                     <div className="w-full p-[1px] bg-gradient-to-r from-transparent via-foreground/10 to-transparent mb-4" />
                     <div className="flex flex-wrap gap-2 mb-4">
-                        {tags.map((t: string) => (
+                        {tags?.map((t: string) => (
                             <span key={t} className="bg-foreground/10 text-foreground text-[0.65rem] uppercase text-gray-600 px-2 py-1 rounded-sm">{t}</span>
                         ))}
                     </div>
                     <p className="text-sm text-gray-500 mb-4">Created {moment(note.createdAt).fromNow()}</p>
                     <p className="mb-4">{note.summary}</p>
-                    {note.sections.map((s) => (
+                    {note.sections?.map((s) => (
                         <div  className="mb-4">
                             <h2 className="font-karla text-2xl mb-2">{s.content.title}</h2>
                             <p>{s.content.text}</p>
