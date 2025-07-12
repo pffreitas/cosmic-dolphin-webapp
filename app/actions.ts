@@ -5,7 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { createNote } from "@/lib/repository/repo";
+import { createNote, fetchNotes } from "@/lib/repository/repo";
 import { NoteType } from "@cosmic-dolphin/api";
 import { FieldValues } from "react-hook-form";
 
@@ -34,7 +34,7 @@ export const signUpAction = async (formData: FormData) => {
     return encodedRedirect(
       "success",
       "/sign-up",
-      "Thanks for signing up! Please check your email for a verification link.",
+      "Thanks for signing up! Please check your email for a verification link."
     );
   }
 };
@@ -75,7 +75,7 @@ export const forgotPasswordAction = async (formData: FormData) => {
     return encodedRedirect(
       "error",
       "/forgot-password",
-      "Could not reset password",
+      "Could not reset password"
     );
   }
 
@@ -86,7 +86,7 @@ export const forgotPasswordAction = async (formData: FormData) => {
   return encodedRedirect(
     "success",
     "/forgot-password",
-    "Check your email for a link to reset your password.",
+    "Check your email for a link to reset your password."
   );
 };
 
@@ -100,7 +100,7 @@ export const resetPasswordAction = async (formData: FormData) => {
     encodedRedirect(
       "error",
       "/protected/reset-password",
-      "Password and confirm password are required",
+      "Password and confirm password are required"
     );
   }
 
@@ -108,7 +108,7 @@ export const resetPasswordAction = async (formData: FormData) => {
     encodedRedirect(
       "error",
       "/protected/reset-password",
-      "Passwords do not match",
+      "Passwords do not match"
     );
   }
 
@@ -120,7 +120,7 @@ export const resetPasswordAction = async (formData: FormData) => {
     encodedRedirect(
       "error",
       "/protected/reset-password",
-      "Password update failed",
+      "Password update failed"
     );
   }
 
@@ -133,14 +133,12 @@ export const signOutAction = async () => {
   return redirect("/sign-in");
 };
 
-
 export interface SubmitPromptFormData {
   prompt: string;
 }
 
 export const submitPrompt = async (data: SubmitPromptFormData) => {
-  const body = data.prompt?.toString() || '';
-  const notes = await createNote(body, NoteType.Knowledge);
-
-  return redirect(`/notes/${notes.id}`);
-}
+  const body = data.prompt?.toString() || "";
+  const note = await createNote(body, NoteType.Knowledge);
+  return redirect(`/notes/${note.id}`);
+};

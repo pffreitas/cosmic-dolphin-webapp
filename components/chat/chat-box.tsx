@@ -4,10 +4,22 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { ArrowUp } from "lucide-react";
+import { redirect } from "next/navigation";
 import { submitPrompt, SubmitPromptFormData } from "@/app/actions";
+import { createNote } from "@/lib/repository/notes.repo";
+import { NoteType } from "@cosmic-dolphin/api";
+import { createClient } from "@/utils/supabase/client";
+import { useSession } from "@supabase/auth-helpers-react";
 
+interface ChatBoxProps {
+    onSubmit: () => void;
+}
 
-export default function ChatBox() {
+export default function ChatBox({ onSubmit }: ChatBoxProps) {
+
+    const session = useSession();
+    const accessToken = session?.access_token;
+
     const {
         register,
         handleSubmit,
@@ -20,15 +32,17 @@ export default function ChatBox() {
         },
     });
 
-    const onSubmit = (data: SubmitPromptFormData) => {
-        submitPrompt(data);
+    const submitFrom = async (data: SubmitPromptFormData) => {
+        const note = await createNote(accessToken, data.prompt, NoteType.Knowledge);
         reset();
+        onSubmit();
+        redirect(`/notes/${note.id}`);
     };
 
     const isMessageEmpty = !watch("prompt");
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="flex gap-2">
+        <form onSubmit={handleSubmit(submitFrom)} className="flex gap-2">
             <textarea
                 id="prompt"
                 {...register("prompt", { required: "This field is required" })}
@@ -43,7 +57,7 @@ export default function ChatBox() {
                     ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                     : "bg-blue-500 text-white hover:bg-blue-600"}`}
             >
-                <ArrowUp  />
+                <ArrowUp />
             </Button>
         </form>
     );

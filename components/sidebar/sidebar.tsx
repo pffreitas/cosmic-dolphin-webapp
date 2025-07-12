@@ -3,8 +3,13 @@ import React, { useState } from 'react';
 import { Settings, ChevronLeft, ChevronRight, LayoutDashboard, Library } from 'lucide-react';
 import Link from "next/link";
 import { usePathname } from 'next/navigation';
+import NewNoteButton from './new-note';
+import { useSession } from '@supabase/auth-helpers-react';
 
-export default function Sidebar() {
+interface SidebarProps {
+}
+
+export default function Sidebar({} : SidebarProps) {
     const pathname = usePathname();
     const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -42,9 +47,8 @@ export default function Sidebar() {
                 <div className="mb-8">
                     <Link href="/" className="flex gap-2 items-center">
                         <div className="text-2xl">🐬</div>
-                        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                            isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
-                        }`}>
+                        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
+                            }`}>
                             <h2 className='font-noto text-lg font-normal text-gray-800 whitespace-nowrap'>
                                 Cosmic Dolphin
                             </h2>
@@ -52,22 +56,24 @@ export default function Sidebar() {
                     </Link>
                 </div>
 
+                <div className="space-y-1 mb-8 items-center flex">
+                    <NewNoteButton />
+                </div>
+
                 {/* Main Navigation */}
                 <nav className="space-y-1 mb-8">
                     {navItems.map((item) => (
                         <Link href={item.href}
                             key={item.label}
-                            className={`flex gap-2 items-center px-2 py-2 text-sm rounded-lg ${
-                                pathname === item.href
-                                    ? "bg-blue-50 text-blue-600"
-                                    : "text-gray-600 hover:bg-gray-50"
-                            }`}
+                            className={`flex gap-2 items-center px-2 py-2 text-sm rounded-lg ${pathname === item.href
+                                ? "bg-blue-50 text-blue-600"
+                                : "text-gray-600 hover:bg-gray-50"
+                                }`}
                             title={isCollapsed ? item.label : ""}
                         >
                             <span>{item.icon}</span>
-                            <span className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                                isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
-                            }`}>
+                            <span className={`transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
+                                }`}>
                                 {item.label}
                             </span>
                         </Link>
@@ -76,9 +82,8 @@ export default function Sidebar() {
 
                 {/* Teams Section */}
                 <div className="mt-4">
-                    <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                        isCollapsed ? 'h-0 opacity-0' : 'h-auto opacity-100'
-                    }`}>
+                    <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'h-0 opacity-0' : 'h-auto opacity-100'
+                        }`}>
                         <h3 className="px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                             Your teams
                         </h3>
@@ -94,9 +99,8 @@ export default function Sidebar() {
                                 <span className="w-6 h-6 flex items-center justify-center bg-gray-100 rounded text-xs font-medium mr-3">
                                     {team.letter}
                                 </span>
-                                <span className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                                    isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
-                                }`}>
+                                <span className={`transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
+                                    }`}>
                                     {team.name}
                                 </span>
                             </a>
@@ -112,9 +116,8 @@ export default function Sidebar() {
                         title={isCollapsed ? "Settings" : ""}
                     >
                         <Settings className="mr-3 h-5 w-5" />
-                        <span className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                            isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
-                        }`}>
+                        <span className={`transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
+                            }`}>
                             Settings
                         </span>
                     </a>

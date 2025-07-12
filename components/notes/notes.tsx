@@ -6,6 +6,7 @@ import type { Note, NoteSection } from "@cosmic-dolphin/api";
 import _ from 'lodash';
 import { fetchNote } from '@/lib/repository/notes.repo';
 import moment from 'moment';
+
 interface NoteProps {
     initialNote: Note | null;
     noteId: number;
