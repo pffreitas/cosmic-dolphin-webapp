@@ -27,17 +27,6 @@ const initialState: NotesState = {
   streamingTokens: [],
 };
 
-// Helper function to serialize Date objects to ISO strings
-const serializeNote = (note: Note): Note => {
-  return {
-    ...note,
-    createdAt:
-      note.createdAt instanceof Date
-        ? note.createdAt.toISOString()
-        : note.createdAt,
-  } as unknown as Note;
-};
-
 // Async thunk for creating a new note
 export const createNewNote = createAsyncThunk(
   "notes/createNote",
@@ -131,7 +120,7 @@ const notesSlice = createSlice({
   initialState,
   reducers: {
     setCurrentNote: (state, action) => {
-      state.currentNote = action.payload ? serializeNote(action.payload) : null;
+      state.currentNote = action.payload;
     },
     clearError: (state) => {
       state.error = null;
@@ -159,7 +148,6 @@ const notesSlice = createSlice({
 
       switch (data.event) {
         case "note_updated":
-          state.currentNote = data.note ? serializeNote(data.note) : null;
           break;
         case "pipeline_status":
           state.streamStatus = data.status;
@@ -183,9 +171,8 @@ const notesSlice = createSlice({
       })
       .addCase(createNewNote.fulfilled, (state, action) => {
         state.isLoading = false;
-        const serializedNote = serializeNote(action.payload);
-        state.currentNote = serializedNote;
-        state.notes.push(serializedNote);
+        state.currentNote = action.payload;
+        state.notes.push(state.currentNote);
       })
       .addCase(createNewNote.rejected, (state, action) => {
         state.isLoading = false;
@@ -197,9 +184,7 @@ const notesSlice = createSlice({
       })
       .addCase(fetchNoteById.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.currentNote = action.payload
-          ? serializeNote(action.payload)
-          : null;
+        state.currentNote = action.payload;
       })
       .addCase(fetchNoteById.rejected, (state, action) => {
         state.isLoading = false;
@@ -233,4 +218,5 @@ export const {
   handleStreamEvent,
   clearStreaming,
 } = notesSlice.actions;
+
 export default notesSlice.reducer;

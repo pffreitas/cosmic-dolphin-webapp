@@ -13,37 +13,35 @@ import {
 import CosmicEditor from "../editor/CosmicEditor";
 
 interface NoteProps {
-  initialNote: Note | null;
+  note: Note | null;
   noteId: number;
   accessToken: string;
 }
 
-export default function Note({ initialNote, noteId, accessToken }: NoteProps) {
+export default function Note({ note, noteId, accessToken }: NoteProps) {
   const streamRef = useRef<boolean>(false);
+  const initializedRef = useRef<boolean>(false);
   const dispatch = useAppDispatch();
 
-  // Get streaming state from Redux
   const {
+    currentNote,
     pendingPrompt,
     isStreaming,
     streamStatus,
     streamError,
-    currentNote,
     streamingTokens,
     isLoading,
   } = useAppSelector((state) => state.notes);
 
-  // Set initial note if provided
+  // Initialize Redux store with server-side data
   useEffect(() => {
-    if (initialNote && !currentNote) {
-      dispatch(setCurrentNote(initialNote));
+    if (note && !initializedRef.current) {
+      dispatch(setCurrentNote(note));
+      initializedRef.current = true;
     }
-  }, [initialNote, currentNote, dispatch]);
+  }, [note, dispatch]);
 
-  function fetchNoteData() {
-    dispatch(fetchNoteById({ accessToken, noteId }));
-  }
-
+  // Handle streaming when there's a pending prompt
   useEffect(() => {
     if (pendingPrompt && !streamRef.current) {
       streamRef.current = true;
@@ -58,20 +56,22 @@ export default function Note({ initialNote, noteId, accessToken }: NoteProps) {
         })
       ).then(() => {
         dispatch(clearPendingPrompt());
-        fetchNoteData();
+        // Refresh the note after streaming to get the updated content
+        dispatch(fetchNoteById({ accessToken, noteId }));
         streamRef.current = false;
       });
-    } else if (!isLoading && !isStreaming) {
-      fetchNoteData();
     }
   }, [isLoading, accessToken, noteId, pendingPrompt, dispatch]);
 
-  if (!currentNote || !currentNote.id) {
+  // Use currentNote from Redux store (initialized with server-side data)
+  const noteToRender = currentNote || note;
+
+  if (!noteToRender || !noteToRender.id) {
     return <div>Note not found</div>;
   }
 
   return (
-    <div key={currentNote.id}>
+    <div key={noteToRender.id}>
       {isStreaming && (
         <div className="flex gap-4">
           <p className="flex items-center gap-1 font-karla shimmer text-purple-950">
@@ -89,9 +89,10 @@ export default function Note({ initialNote, noteId, accessToken }: NoteProps) {
       )}
 
       {!isStreaming && (
-        <div key={currentNote.id}>
+        <div key={noteToRender.id}>
+          <h2>{noteToRender.id}</h2>
           <CosmicEditor
-            content={currentNote.body || streamingTokens.join("")}
+            content={noteToRender.body || streamingTokens.join("")}
           />
         </div>
       )}

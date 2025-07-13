@@ -27,7 +27,7 @@ export default async function Index({ params }: PageProps) {
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <Note initialNote={note} noteId={note.id} accessToken={accessToken} />
+      <Note note={note} noteId={note.id} accessToken={accessToken} />
     </Suspense>
   );
 }
