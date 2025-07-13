@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { Note, NoteType } from "@cosmic-dolphin/api";
-import { createNote } from "@/lib/repository/notes.repo";
+import { createNote, fetchNote } from "@/lib/repository/notes.repo";
 import { streamKnowledge } from "@/lib/repository/knowledge.repo";
 
 interface NotesState {
@@ -27,6 +27,17 @@ const initialState: NotesState = {
   streamingTokens: [],
 };
 
+// Helper function to serialize Date objects to ISO strings
+const serializeNote = (note: Note): Note => {
+  return {
+    ...note,
+    createdAt:
+      note.createdAt instanceof Date
+        ? note.createdAt.toISOString()
+        : note.createdAt,
+  } as unknown as Note;
+};
+
 // Async thunk for creating a new note
 export const createNewNote = createAsyncThunk(
   "notes/createNote",
@@ -40,6 +51,15 @@ export const createNewNote = createAsyncThunk(
     noteType: NoteType;
   }) => {
     const note = await createNote(accessToken, body, noteType);
+    return note;
+  }
+);
+
+// Async thunk for fetching a note by ID
+export const fetchNoteById = createAsyncThunk(
+  "notes/fetchNoteById",
+  async ({ accessToken, noteId }: { accessToken: string; noteId: number }) => {
+    const note = await fetchNote(accessToken, noteId);
     return note;
   }
 );
@@ -111,7 +131,7 @@ const notesSlice = createSlice({
   initialState,
   reducers: {
     setCurrentNote: (state, action) => {
-      state.currentNote = action.payload;
+      state.currentNote = action.payload ? serializeNote(action.payload) : null;
     },
     clearError: (state) => {
       state.error = null;
@@ -139,7 +159,7 @@ const notesSlice = createSlice({
 
       switch (data.event) {
         case "note_updated":
-          state.currentNote = data.note;
+          state.currentNote = data.note ? serializeNote(data.note) : null;
           break;
         case "pipeline_status":
           state.streamStatus = data.status;
@@ -163,13 +183,28 @@ const notesSlice = createSlice({
       })
       .addCase(createNewNote.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.currentNote = action.payload;
+        const serializedNote = serializeNote(action.payload);
+        state.currentNote = serializedNote;
         console.log("Created note", action.payload);
-        state.notes.push(action.payload);
+        state.notes.push(serializedNote);
       })
       .addCase(createNewNote.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.error.message || "Failed to create note";
+      })
+      .addCase(fetchNoteById.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchNoteById.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.currentNote = action.payload
+          ? serializeNote(action.payload)
+          : null;
+      })
+      .addCase(fetchNoteById.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message || "Failed to fetch note";
       })
       .addCase(streamNoteKnowledge.pending, (state) => {
         state.isStreaming = true;
