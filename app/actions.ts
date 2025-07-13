@@ -5,9 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { createNote, fetchNotes } from "@/lib/repository/repo";
-import { NoteType } from "@cosmic-dolphin/api";
-import { FieldValues } from "react-hook-form";
+import { fetchNotes } from "@/lib/repository/repo";
 
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
@@ -131,14 +129,4 @@ export const signOutAction = async () => {
   const supabase = await createClient();
   await supabase.auth.signOut();
   return redirect("/sign-in");
-};
-
-export interface SubmitPromptFormData {
-  prompt: string;
-}
-
-export const submitPrompt = async (data: SubmitPromptFormData) => {
-  const body = data.prompt?.toString() || "";
-  const note = await createNote(body, NoteType.Knowledge);
-  return redirect(`/notes/${note.id}`);
 };
