@@ -185,7 +185,6 @@ const notesSlice = createSlice({
         state.isLoading = false;
         const serializedNote = serializeNote(action.payload);
         state.currentNote = serializedNote;
-        console.log("Created note", action.payload);
         state.notes.push(serializedNote);
       })
       .addCase(createNewNote.rejected, (state, action) => {

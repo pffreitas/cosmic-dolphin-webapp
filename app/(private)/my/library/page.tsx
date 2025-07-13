@@ -8,7 +8,7 @@ const NoteCard = ({ note }: { note: Note }) => {
       <div className="p-4">
         <div className="grow default font-sans text-base font-medium text-textMain dark:text-textMainDark selection:bg-super/50 selection:text-textMain dark:selection:bg-superDuper/10 dark:selection:text-superDark">
           <div className="line-clamp-1 break-all transition duration-300 md:group-hover:text-super md:dark:group-hover:text-superDark">
-            {note.title}
+            {note.id} - {note.title}
           </div>
         </div>
         <div className="break-word mt-two line-clamp-2 text-balance light font-sans text-sm text-textOff dark:text-textOffDark selection:bg-super/50 selection:text-textMain dark:selection:bg-superDuper/10 dark:selection:text-superDark">

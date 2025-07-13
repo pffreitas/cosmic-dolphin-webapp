@@ -30,6 +30,5 @@ export async function createNote(
   const note = await notesApi.notesCreate({
     createNoteRequest: { body, type: noteType },
   });
-  console.log("Note created", note);
   return note;
 }
