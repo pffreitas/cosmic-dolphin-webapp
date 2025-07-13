@@ -1,8 +1,6 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 import type { Note } from "@cosmic-dolphin/api";
-import { fetchNote } from "@/lib/repository/notes.repo";
-import moment from "moment";
 import { ArrowDown, LoaderCircle } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import {
@@ -10,6 +8,7 @@ import {
   streamNoteKnowledge,
   setCurrentNote,
   clearStreaming,
+  fetchNoteById,
 } from "@/lib/store/slices/notesSlice";
 import CosmicEditor from "../editor/CosmicEditor";
 
@@ -20,7 +19,6 @@ interface NoteProps {
 }
 
 export default function Note({ initialNote, noteId, accessToken }: NoteProps) {
-  const [note, setNote] = useState<Note | null>(initialNote);
   const streamRef = useRef<boolean>(false);
   const dispatch = useAppDispatch();
 
@@ -35,10 +33,15 @@ export default function Note({ initialNote, noteId, accessToken }: NoteProps) {
     isLoading,
   } = useAppSelector((state) => state.notes);
 
-  async function fetchNoteData() {
-    const noteData = await fetchNote(accessToken, noteId);
-    setNote(noteData);
-    dispatch(setCurrentNote(noteData));
+  // Set initial note if provided
+  useEffect(() => {
+    if (initialNote && !currentNote) {
+      dispatch(setCurrentNote(initialNote));
+    }
+  }, [initialNote, currentNote, dispatch]);
+
+  function fetchNoteData() {
+    dispatch(fetchNoteById({ accessToken, noteId }));
   }
 
   useEffect(() => {
@@ -54,9 +57,7 @@ export default function Note({ initialNote, noteId, accessToken }: NoteProps) {
           prompt: pendingPrompt,
         })
       ).then(() => {
-        // Clear the pending prompt after processing
         dispatch(clearPendingPrompt());
-        // Fetch final note data
         fetchNoteData();
         streamRef.current = false;
       });
@@ -65,19 +66,12 @@ export default function Note({ initialNote, noteId, accessToken }: NoteProps) {
     }
   }, [isLoading, accessToken, noteId, pendingPrompt, dispatch]);
 
-  // Update local note state when Redux currentNote changes
-  useEffect(() => {
-    if (currentNote && currentNote.id === noteId) {
-      setNote(currentNote);
-    }
-  }, [currentNote, noteId]);
-
-  if (!note || !note.id) {
+  if (!currentNote || !currentNote.id) {
     return <div>Note not found</div>;
   }
 
   return (
-    <div key={note.id}>
+    <div key={currentNote.id}>
       {isStreaming && (
         <div className="flex gap-4">
           <p className="flex items-center gap-1 font-karla shimmer text-purple-950">
@@ -95,8 +89,10 @@ export default function Note({ initialNote, noteId, accessToken }: NoteProps) {
       )}
 
       {!isStreaming && (
-        <div key={note.id}>
-          <CosmicEditor content={note.body || streamingTokens.join("")} />
+        <div key={currentNote.id}>
+          <CosmicEditor
+            content={currentNote.body || streamingTokens.join("")}
+          />
         </div>
       )}
     </div>
