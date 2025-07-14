@@ -90,7 +90,6 @@ export default function Note({ note, noteId, accessToken }: NoteProps) {
 
       {!isStreaming && (
         <div key={noteToRender.id}>
-          <h2>{noteToRender.id}</h2>
           <CosmicEditor
             content={noteToRender.body || streamingTokens.join("")}
           />

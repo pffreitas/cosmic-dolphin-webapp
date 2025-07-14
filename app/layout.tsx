@@ -3,10 +3,11 @@ import { GeistSans } from "geist/font/sans";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import Sidebar from "@/components/sidebar/sidebar";
-import { SessionContextProvider } from "@supabase/auth-helpers-react";
-import { createClient } from "@/utils/supabase/server";
 import Body from "./body";
 import ReduxProvider from "@/components/providers/redux-provider";
+import Link from "next/link";
+import { CosmicMenu } from "@/components/cosmic-menu";
+import NewNoteButton from "@/components/sidebar/new-note";
 
 export default async function RootLayout({
   children,
@@ -27,7 +28,7 @@ export default async function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="bg-background text-foreground">
+      <body className="bg-background bg-gray-50 text-foreground">
         <ReduxProvider>
           <Body>
             <ThemeProvider
@@ -36,23 +37,36 @@ export default async function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
-              <main className="flex min-h-screen bg-gray-50">
-                <Sidebar />
-
-                <div className="flex-1 flex flex-col">
-                  <header className="bg-white border-b border-gray-200 p-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex-1 flex"></div>
-                      <div className="flex items-center space-x-4">
-                        <HeaderAuth />
+              <main className="w-full max-w-screen-lg mx-auto flex min-h-screen gap-6 flex-col">
+                <header className="bg-white rounded-2xl shadow-sm border border-gray-100 mt-4 p-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1 flex">
+                      <Link href="/" className="flex gap-2 items-center">
+                        <div className="text-2xl">🐬</div>
+                        <div
+                          className={`transition-all duration-300 ease-in-out overflow-hidden ${"w-auto opacity-100"}`}
+                        >
+                          <h2 className="font-noto text-lg font-normal text-gray-800 whitespace-nowrap">
+                            Cosmic Dolphin
+                          </h2>
+                        </div>
+                      </Link>
+                      <CosmicMenu />
+                    </div>
+                    <div className="flex-1 flex justify-end">
+                      <div className="flex items-center space-x-2">
+                        <NewNoteButton />
                       </div>
                     </div>
-                  </header>
+                    <div className="flex items-center space-x-2">
+                      <HeaderAuth />
+                    </div>
+                  </div>
+                </header>
 
-                  <main className="flex-1 p-6 bg-gray-50">
-                    <div className="h-full">{children}</div>
-                  </main>
-                </div>
+                <main className="flex-1 p-6 bg-gray-50">
+                  <div className="h-full">{children}</div>
+                </main>
               </main>
             </ThemeProvider>
           </Body>

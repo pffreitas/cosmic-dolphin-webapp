@@ -3,12 +3,18 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { createClient } from "@/utils/supabase/server";
 import { User as UserIcon } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
-import { User } from '@supabase/auth-js';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@radix-ui/react-dropdown-menu";
+import { User } from "@supabase/auth-js";
 
 type ProfileDropDownProps = {
   user: User | null;
-}
+};
 
 const ProfileDropDown: React.FC<ProfileDropDownProps> = ({ user }) => {
   return (
@@ -29,8 +35,8 @@ const ProfileDropDown: React.FC<ProfileDropDownProps> = ({ user }) => {
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
-}
+  );
+};
 
 export default async function AuthButton() {
   const supabase = await createClient();
