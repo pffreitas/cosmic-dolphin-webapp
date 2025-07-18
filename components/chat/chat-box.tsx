@@ -79,13 +79,10 @@ export default function ChatBox({ onSubmit }: ChatBoxProps) {
       />
       <Button
         type="button"
+        variant="outline"
         onClick={handleSubmitPrompt}
         disabled={isMessageEmpty || isLoading}
-        className={`rounded-md self-end p-2 h-8 w-8 ${
-          isMessageEmpty || isLoading
-            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-            : "bg-blue-500 text-white hover:bg-blue-600"
-        }`}
+        className={`rounded-md self-end p-2 h-8 w-8 disabled:shadow-none shadow-md hover:bg-gray-100`}
       >
         <ArrowUp />
       </Button>

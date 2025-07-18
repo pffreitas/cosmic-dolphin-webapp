@@ -98,7 +98,6 @@ export default function Note({ note, noteId, accessToken }: NoteProps) {
           </div>
         </div>
       )}
-      <div className="text-sm text-gray-500">{streamingTokens.join("")}</div>
 
       {streamError && (
         <div className="text-red-500 mb-4">Error: {streamError}</div>
