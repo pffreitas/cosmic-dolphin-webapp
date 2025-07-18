@@ -36,7 +36,7 @@ export default function NewNoteButton({}: NewNoteButtonProps) {
         <div className="fixed inset-0 bg-slate-200 bg-opacity-50 backdrop-blur-sm z-50">
           <div className="fixed inset-0" onClick={handleOverlayClick}></div>
           <div>
-            <div className="absolute w-1/2 h-[100px] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 rounded-lg shadow-lg">
+            <div className="absolute w-1/2 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 rounded-lg shadow-lg">
               <ChatBox
                 onSubmit={() => {
                   handleOverlayClick();

@@ -8,15 +8,14 @@ import { NoteType } from "@cosmic-dolphin/api";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import { createNewNote, setPendingPrompt } from "@/lib/store/slices/notesSlice";
+import CosmicEditor from "../editor/CosmicEditor";
 
 interface ChatBoxProps {
   onSubmit: () => void;
 }
 
 export default function ChatBox({ onSubmit }: ChatBoxProps) {
-  const [prompt, setPrompt] = useState(
-    "https://app.daily.dev/posts/entropy-in-teams-the-silent-productivity-killer-5pxbgkwpz"
-  );
+  const [prompt, setPrompt] = useState("");
   const dispatch = useAppDispatch();
   const { isLoading, error } = useAppSelector((state) => state.notes);
   const session = useSession();
@@ -34,9 +33,6 @@ export default function ChatBox({ onSubmit }: ChatBoxProps) {
     }
 
     try {
-      // Store the prompt in Redux state for processing after redirect
-      dispatch(setPendingPrompt(prompt.trim()));
-
       // Create a new note with the user's prompt as body using Redux
       const resultAction = await dispatch(
         createNewNote({
@@ -48,6 +44,15 @@ export default function ChatBox({ onSubmit }: ChatBoxProps) {
 
       if (createNewNote.fulfilled.match(resultAction)) {
         const createdNote = resultAction.payload;
+
+        // Store the prompt in Redux state for processing after redirect
+        dispatch(
+          setPendingPrompt({
+            prompt: prompt.trim(),
+            targetNoteId: createdNote.id,
+          })
+        );
+
         router.push(`/notes/${createdNote.id}`);
 
         setPrompt("");
@@ -61,21 +66,22 @@ export default function ChatBox({ onSubmit }: ChatBoxProps) {
   const isMessageEmpty = !prompt.trim();
 
   return (
-    <div className="flex gap-2">
-      <textarea
-        id="prompt"
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
-        className="w-full max-w focus:outline-none focus:border-0 resize-none"
-        rows={1}
-        placeholder="Type something here"
-        disabled={isLoading}
+    <div className="flex flex-col gap-4">
+      <CosmicEditor
+        className="max-h-[50vh]"
+        onUpdate={(text) => {
+          setPrompt(text);
+        }}
+        content={
+          "https://notthecode.com/entropy-in-teams-the-unseen-force-of-decline/"
+        }
+        onSubmit={handleSubmitPrompt}
       />
       <Button
         type="button"
         onClick={handleSubmitPrompt}
         disabled={isMessageEmpty || isLoading}
-        className={`rounded-full p-2 h-8 w-8 ${
+        className={`rounded-md self-end p-2 h-8 w-8 ${
           isMessageEmpty || isLoading
             ? "bg-gray-300 text-gray-500 cursor-not-allowed"
             : "bg-blue-500 text-white hover:bg-blue-600"

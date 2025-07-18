@@ -12,6 +12,7 @@ interface NotesState {
   streamStatus: string;
   streamError: string | null;
   pendingPrompt: string | null;
+  pendingPromptTargetNoteId: number | null;
   streamingTokens: string[];
 }
 
@@ -24,6 +25,7 @@ const initialState: NotesState = {
   streamStatus: "",
   streamError: null,
   pendingPrompt: null,
+  pendingPromptTargetNoteId: null,
   streamingTokens: [],
 };
 
@@ -135,10 +137,12 @@ const notesSlice = createSlice({
       state.streamingTokens = [];
     },
     setPendingPrompt: (state, action) => {
-      state.pendingPrompt = action.payload;
+      state.pendingPrompt = action.payload.prompt;
+      state.pendingPromptTargetNoteId = action.payload.targetNoteId;
     },
     clearPendingPrompt: (state) => {
       state.pendingPrompt = null;
+      state.pendingPromptTargetNoteId = null;
     },
     setStreamStatus: (state, action) => {
       state.streamStatus = action.payload;
@@ -156,7 +160,7 @@ const notesSlice = createSlice({
           state.streamStatus = "Processing complete";
           break;
         case "content":
-          state.streamingTokens.push(data.content);
+          state.streamingTokens.push(data.data);
           break;
         default:
           console.log("Unknown stream event:", data);

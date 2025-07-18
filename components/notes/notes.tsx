@@ -26,6 +26,7 @@ export default function Note({ note, noteId, accessToken }: NoteProps) {
   const {
     currentNote,
     pendingPrompt,
+    pendingPromptTargetNoteId,
     isStreaming,
     streamStatus,
     streamError,
@@ -41,9 +42,13 @@ export default function Note({ note, noteId, accessToken }: NoteProps) {
     }
   }, [note, dispatch]);
 
-  // Handle streaming when there's a pending prompt
+  // Handle streaming when there's a pending prompt for this specific note
   useEffect(() => {
-    if (pendingPrompt && !streamRef.current) {
+    if (
+      pendingPrompt &&
+      pendingPromptTargetNoteId === noteId &&
+      !streamRef.current
+    ) {
       streamRef.current = true;
 
       dispatch(clearStreaming());
@@ -51,17 +56,24 @@ export default function Note({ note, noteId, accessToken }: NoteProps) {
       dispatch(
         streamNoteKnowledge({
           accessToken,
-          noteId,
+          noteId: noteId, // Use the specific noteId instead of fallback logic
           prompt: pendingPrompt,
         })
       ).then(() => {
         dispatch(clearPendingPrompt());
         // Refresh the note after streaming to get the updated content
-        dispatch(fetchNoteById({ accessToken, noteId }));
+        dispatch(fetchNoteById({ accessToken, noteId: noteId }));
         streamRef.current = false;
       });
     }
-  }, [isLoading, accessToken, noteId, pendingPrompt, dispatch]);
+  }, [
+    isLoading,
+    accessToken,
+    noteId,
+    pendingPrompt,
+    pendingPromptTargetNoteId,
+    dispatch,
+  ]);
 
   // Use currentNote from Redux store (initialized with server-side data)
   const noteToRender = currentNote || note;
@@ -73,17 +85,21 @@ export default function Note({ note, noteId, accessToken }: NoteProps) {
   return (
     <div key={noteToRender.id}>
       {isStreaming && (
-        <div className="flex gap-4">
-          <p className="flex items-center gap-1 font-karla shimmer text-purple-950">
-            <LoaderCircle size={16} className="animate-spin" />
-            {streamStatus || "Processing your request"}
-          </p>
-          <p className="text-sm text-gray-500 flex items-center gap-1">
-            <ArrowDown size={16} className="animate-bounce" />
-            {streamingTokens.length} Tokens Received
-          </p>
+        <div className="flex flex-col gap-4">
+          <div className="flex gap-4">
+            <p className="flex items-center gap-1 font-karla shimmer text-purple-950">
+              <LoaderCircle size={16} className="animate-spin" />
+              {streamStatus || "Processing your request"}
+            </p>
+            <p className="text-sm text-gray-500 flex items-center gap-1">
+              <ArrowDown size={16} className="animate-bounce" />
+              {streamingTokens.length} Tokens Received
+            </p>
+          </div>
         </div>
       )}
+      <div className="text-sm text-gray-500">{streamingTokens.join("")}</div>
+
       {streamError && (
         <div className="text-red-500 mb-4">Error: {streamError}</div>
       )}
@@ -92,6 +108,9 @@ export default function Note({ note, noteId, accessToken }: NoteProps) {
         <div key={noteToRender.id}>
           <CosmicEditor
             content={noteToRender.body || streamingTokens.join("")}
+            onUpdate={(text) => {
+              console.log("Updated content:", text);
+            }}
           />
         </div>
       )}
