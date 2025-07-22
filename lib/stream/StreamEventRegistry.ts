@@ -1,6 +1,6 @@
 import {
   StreamEvent,
-  StreamEventHandler,
+  StreamEventHandlerFunction,
   StreamEventHandlerRegistry,
   StreamingTask,
   StreamProgressDetail,
@@ -14,9 +14,9 @@ export class StreamEventRegistry {
    */
   register<T extends StreamEvent>(
     eventType: T["event"],
-    handler: StreamEventHandler<T>
+    handler: StreamEventHandlerFunction<T>
   ): void {
-    this.handlers[eventType] = handler as StreamEventHandler;
+    this.handlers[eventType] = handler as StreamEventHandlerFunction;
   }
 
   /**

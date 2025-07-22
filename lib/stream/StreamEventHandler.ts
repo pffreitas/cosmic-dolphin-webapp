@@ -1,6 +1,6 @@
-import { StreamEventRegistry } from './StreamEventRegistry';
-import { StreamEvent, StreamState } from './types';
-import { SSEParser, createStreamParser } from './parsers';
+import { StreamEventRegistry } from "./StreamEventRegistry";
+import { StreamEvent, StreamState } from "./types";
+import { SSEParser, createStreamParser } from "./parsers";
 
 export interface StreamHandlerOptions {
   /** Custom event registry to use */
@@ -25,9 +25,9 @@ export class StreamEventHandler {
     this.options = {
       maxRetries: 3,
       retryDelay: 1000,
-      ...options
+      ...options,
     };
-    
+
     // Use provided registry or create a new one with default handlers
     this.registry = options.registry || new StreamEventRegistry();
     if (!options.registry) {
@@ -42,10 +42,13 @@ export class StreamEventHandler {
     try {
       this.registry.process(event, state);
     } catch (error) {
-      console.error('Error processing stream event:', error, event);
-      
+      console.error("Error processing stream event:", error, event);
+
       // Update stream state with error
-      state.streamError = error instanceof Error ? error.message : 'Unknown error processing stream event';
+      state.streamError =
+        error instanceof Error
+          ? error.message
+          : "Unknown error processing stream event";
     }
   }
 
@@ -60,51 +63,49 @@ export class StreamEventHandler {
     // Initialize state
     const state: StreamState = {
       isStreaming: true,
-      streamStatus: 'Processing your request...',
+      streamStatus: "Processing your request...",
       streamError: null,
       streamingTokens: [],
       streamingTasks: [],
-      ...initialState
+      ...initialState,
     };
 
     // Update initial state
     onStateUpdate(state);
 
     try {
-      await createStreamParser(
-        response,
-        (event) => this.processEvent(event, state),
-        this.options.parserOptions
+      await createStreamParser(response, (event) =>
+        this.processEvent(event, state)
       );
 
       // Mark streaming as complete
       state.isStreaming = false;
-      state.streamStatus = '';
+      state.streamStatus = "";
       onStateUpdate(state);
-
     } catch (error) {
-      console.error('Stream processing error:', error);
-      
+      console.error("Stream processing error:", error);
+
       // Handle retry logic
       if (this.retryCount < (this.options.maxRetries || 3)) {
         this.retryCount++;
         console.log(`Retrying stream connection (attempt ${this.retryCount})`);
-        
+
         // Update state to show retry
         state.streamStatus = `Retrying connection (${this.retryCount}/${this.options.maxRetries})...`;
         onStateUpdate(state);
-        
+
         // Wait before retry
         await this.delay(this.options.retryDelay || 1000);
-        
+
         // Note: In a real implementation, you would retry the entire request
         // This is just updating the state to indicate retry attempt
         throw error; // Re-throw to let caller handle retry
       } else {
         // Max retries exceeded
         state.isStreaming = false;
-        state.streamError = error instanceof Error ? error.message : 'Failed to stream data';
-        state.streamStatus = '';
+        state.streamError =
+          error instanceof Error ? error.message : "Failed to stream data";
+        state.streamStatus = "";
         onStateUpdate(state);
       }
     }
@@ -114,7 +115,7 @@ export class StreamEventHandler {
    * Register a custom event handler
    */
   registerHandler<T extends StreamEvent>(
-    eventType: T['event'],
+    eventType: T["event"],
     handler: (event: T, state: StreamState) => void
   ): void {
     this.registry.register(eventType, handler);
@@ -145,7 +146,7 @@ export class StreamEventHandler {
    * Utility method to create a delay
    */
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
@@ -172,22 +173,19 @@ export class StreamEventHandler {
       try {
         this.resetRetries();
         const response = await streamFunction(params);
-        
-        await this.handleStreamResponse(
-          response,
-          (state) => {
-            // Dispatch state updates to Redux
-            // Note: This would need to be adapted to your specific Redux actions
-            dispatch({ type: 'stream/stateUpdate', payload: state });
-          }
-        );
-        
+
+        await this.handleStreamResponse(response, (state) => {
+          // Dispatch state updates to Redux
+          // Note: This would need to be adapted to your specific Redux actions
+          dispatch({ type: "stream/stateUpdate", payload: state });
+        });
+
         return { success: true };
       } catch (error) {
-        console.error('Streaming thunk error:', error);
+        console.error("Streaming thunk error:", error);
         dispatch({
-          type: 'stream/error',
-          payload: error instanceof Error ? error.message : 'Streaming failed'
+          type: "stream/error",
+          payload: error instanceof Error ? error.message : "Streaming failed",
         });
         return { success: false };
       }

@@ -2,7 +2,7 @@
 
 export interface StreamProgressDetail {
   id: string;
-  type: 'tool_call' | 'calling_llm' | 'llm_response' | 'info' | 'error';
+  type: "tool_call" | "calling_llm" | "llm_response" | "info" | "error";
   timestamp: number;
   data?: any;
   message?: string;
@@ -10,7 +10,7 @@ export interface StreamProgressDetail {
 
 export interface StreamingTask {
   id: string;
-  status: 'Running' | 'Completed' | 'Error';
+  status: "Running" | "Completed" | "Error";
   name?: string;
   startTime?: number;
   endTime?: number;
@@ -29,28 +29,28 @@ export interface BaseStreamEvent {
 
 // Specific event types
 export interface NoteUpdatedEvent extends BaseStreamEvent {
-  event: 'note_updated';
+  event: "note_updated";
   data: {
     noteId: number;
   };
 }
 
 export interface PipelineStatusEvent extends BaseStreamEvent {
-  event: 'pipeline_status';
+  event: "pipeline_status";
   status: string;
 }
 
 export interface PipelineCompleteEvent extends BaseStreamEvent {
-  event: 'pipeline_complete';
+  event: "pipeline_complete";
 }
 
 export interface ContentEvent extends BaseStreamEvent {
-  event: 'content';
+  event: "content";
   data: string;
 }
 
 export interface TaskStartEvent extends BaseStreamEvent {
-  event: 'task_start';
+  event: "task_start";
   data: {
     task_id: string;
     task_name?: string;
@@ -59,14 +59,14 @@ export interface TaskStartEvent extends BaseStreamEvent {
 }
 
 export interface TaskCompleteEvent extends BaseStreamEvent {
-  event: 'task_complete';
+  event: "task_complete";
   data: {
     task_id: string;
   };
 }
 
 export interface TaskErrorEvent extends BaseStreamEvent {
-  event: 'task_error';
+  event: "task_error";
   data: {
     task_id: string;
     error?: string;
@@ -74,7 +74,7 @@ export interface TaskErrorEvent extends BaseStreamEvent {
 }
 
 export interface ToolCallEvent extends BaseStreamEvent {
-  event: 'tool_call';
+  event: "tool_call";
   data: {
     tool_name: string;
     parameters?: Record<string, any>;
@@ -83,7 +83,7 @@ export interface ToolCallEvent extends BaseStreamEvent {
 }
 
 export interface CallingLlmEvent extends BaseStreamEvent {
-  event: 'calling_llm';
+  event: "calling_llm";
   data: {
     model?: string;
     prompt_tokens?: number;
@@ -92,7 +92,7 @@ export interface CallingLlmEvent extends BaseStreamEvent {
 }
 
 export interface LlmResponseEvent extends BaseStreamEvent {
-  event: 'llm_response';
+  event: "llm_response";
   data: {
     response?: string;
     completion_tokens?: number;
@@ -101,7 +101,7 @@ export interface LlmResponseEvent extends BaseStreamEvent {
 }
 
 // Union type for all possible stream events
-export type StreamEvent = 
+export type StreamEvent =
   | NoteUpdatedEvent
   | PipelineStatusEvent
   | PipelineCompleteEvent
@@ -114,14 +114,14 @@ export type StreamEvent =
   | LlmResponseEvent;
 
 // Event handler function type
-export type StreamEventHandler<T extends StreamEvent = StreamEvent> = (
+export type StreamEventHandlerFunction<T extends StreamEvent = StreamEvent> = (
   event: T,
   state: any
 ) => void;
 
 // Event handler registry type
 export type StreamEventHandlerRegistry = {
-  [eventType: string]: StreamEventHandler<any>;
+  [eventType: string]: StreamEventHandlerFunction<any>;
 };
 
 // Stream state interface for Redux

@@ -1,5 +1,9 @@
-import { Mark, mergeAttributes } from "@tiptap/core";
-import { InputRule, PasteRule } from "@tiptap/core";
+import {
+  Mark,
+  mergeAttributes,
+  markInputRule,
+  markPasteRule,
+} from "@tiptap/core";
 
 export interface ExpandableMarkOptions {
   HTMLAttributes: Record<string, any>;
@@ -86,56 +90,25 @@ export const ExpandableMark = Mark.create<ExpandableMarkOptions>({
   },
 
   addInputRules() {
-    const inputRegex = /\?\?([^?]+)\?\?(\s?)$/;
-
     return [
-      new InputRule({
-        find: inputRegex,
-        handler: ({ state, range, match }) => {
-          const { from, to } = range;
-          const content = match[1];
-          const space = match[2] || "";
-
-          if (!content) return null;
-
-          const tr = state.tr;
-          tr.delete(from, to);
-          tr.insertText(content + space, from);
-          tr.addMark(
-            from,
-            from + content.length,
-            this.type.create({ content })
-          );
-
-          return tr;
-        },
+      markInputRule({
+        find: /\?\?([^?]+)\?\?(\s?)$/,
+        type: this.type,
+        getAttributes: (match) => ({
+          content: match[1],
+        }),
       }),
     ];
   },
 
   addPasteRules() {
-    const pasteRegex = /\?\?([^?]+)\?\?/g;
-
     return [
-      new PasteRule({
-        find: pasteRegex,
-        handler: ({ state, range, match }) => {
-          const { from, to } = range;
-          const content = match[1];
-
-          if (!content) return null;
-
-          const tr = state.tr;
-          tr.delete(from, to);
-          tr.insertText(content, from);
-          tr.addMark(
-            from,
-            from + content.length,
-            this.type.create({ content })
-          );
-
-          return tr;
-        },
+      markPasteRule({
+        find: /\?\?([^?]+)\?\?/g,
+        type: this.type,
+        getAttributes: (match) => ({
+          content: match[1],
+        }),
       }),
     ];
   },
