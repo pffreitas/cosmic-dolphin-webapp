@@ -72,9 +72,7 @@ export default function ChatBox({ onSubmit }: ChatBoxProps) {
         onUpdate={(text) => {
           setPrompt(text);
         }}
-        content={
-          "https://notthecode.com/entropy-in-teams-the-unseen-force-of-decline/"
-        }
+        content={"https://semaphore.io/blog/ai-technical-debt"}
         onSubmit={handleSubmitPrompt}
       />
       <Button

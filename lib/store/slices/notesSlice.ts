@@ -2,6 +2,12 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { Note, NoteType } from "@cosmic-dolphin/api";
 import { createNote, fetchNote } from "@/lib/repository/notes.repo";
 import { streamKnowledge } from "@/lib/repository/knowledge.repo";
+import {
+  StreamingTask,
+  StreamEvent,
+  defaultStreamRegistry,
+  createStreamParser,
+} from "@/lib/stream";
 
 interface NotesState {
   notes: Note[];
@@ -14,6 +20,7 @@ interface NotesState {
   pendingPrompt: string | null;
   pendingPromptTargetNoteId: number | null;
   streamingTokens: string[];
+  streamingTasks: StreamingTask[];
 }
 
 const initialState: NotesState = {
@@ -27,6 +34,7 @@ const initialState: NotesState = {
   pendingPrompt: null,
   pendingPromptTargetNoteId: null,
   streamingTokens: [],
+  streamingTasks: [],
 };
 
 // Async thunk for creating a new note
@@ -72,46 +80,10 @@ export const streamNoteKnowledge = createAsyncThunk(
   ) => {
     const streamResponse = await streamKnowledge(accessToken, noteId, prompt);
 
-    const reader = streamResponse.body?.getReader();
-    const decoder = new TextDecoder();
-
-    if (!reader) {
-      throw new Error("No response body reader available");
-    }
-
-    let buffer = "";
-
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-
-        if (done) {
-          break;
-        }
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-
-        // Keep the last incomplete line in the buffer
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            try {
-              const eventData = line.substring(6);
-              if (eventData.trim()) {
-                const data = JSON.parse(eventData);
-                dispatch(handleStreamEvent(data));
-              }
-            } catch (parseError) {
-              console.error("Error parsing SSE data:", parseError);
-            }
-          }
-        }
-      }
-    } finally {
-      reader.releaseLock();
-    }
+    // Use the new stream parser system
+    await createStreamParser(streamResponse, (event: StreamEvent) => {
+      dispatch(handleStreamEvent(event));
+    });
 
     return { success: true };
   }
@@ -148,23 +120,10 @@ const notesSlice = createSlice({
       state.streamStatus = action.payload;
     },
     handleStreamEvent: (state, action) => {
-      const data = action.payload;
+      const event: StreamEvent = action.payload;
 
-      switch (data.event) {
-        case "note_updated":
-          break;
-        case "pipeline_status":
-          state.streamStatus = data.status;
-          break;
-        case "pipeline_complete":
-          state.streamStatus = "Processing complete";
-          break;
-        case "content":
-          state.streamingTokens.push(data.data);
-          break;
-        default:
-          console.log("Unknown stream event:", data);
-      }
+      // Use the new stream event registry to process the event
+      defaultStreamRegistry.process(event, state);
     },
   },
   extraReducers: (builder) => {
@@ -198,6 +157,8 @@ const notesSlice = createSlice({
         state.isStreaming = true;
         state.streamError = null;
         state.streamStatus = "Processing your request...";
+        state.streamingTokens = [];
+        state.streamingTasks = [];
       })
       .addCase(streamNoteKnowledge.fulfilled, (state) => {
         state.isStreaming = false;
