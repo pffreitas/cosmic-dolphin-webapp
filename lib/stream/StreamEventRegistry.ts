@@ -193,9 +193,7 @@ export class StreamEventRegistry {
           type: "calling_llm",
           timestamp: event.timestamp || Date.now(),
           data: {
-            model: event.data?.model,
-            prompt_tokens: event.data?.prompt_tokens,
-            request: event.data?.request,
+            request: JSON.parse(event.data?.request || "{}"),
           },
           message: `Calling LLM${event.data?.model ? ` (${event.data.model})` : ""}`,
         };
@@ -213,9 +211,7 @@ export class StreamEventRegistry {
           type: "llm_response",
           timestamp: event.timestamp || Date.now(),
           data: {
-            response: event.data?.response,
-            completion_tokens: event.data?.completion_tokens,
-            total_tokens: event.data?.total_tokens,
+            response: JSON.parse(event.data?.response || "{}"),
           },
           message: `LLM response received${event.data?.total_tokens ? ` (${event.data.total_tokens} tokens)` : ""}`,
         };
