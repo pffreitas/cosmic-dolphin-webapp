@@ -17,13 +17,7 @@ import {
   Library,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
-import {
-  clearPendingPrompt,
-  streamNoteKnowledge,
-  setCurrentNote,
-  clearStreaming,
-  fetchNoteById,
-} from "@/lib/store/slices/notesSlice";
+import { setCurrentNote, clearStreaming } from "@/lib/store/slices/notesSlice";
 import CosmicEditor from "../editor/CosmicEditor";
 import OpenGraphWebpage from "./OpenGraphWebpage";
 import OpenGraphImage from "./OpenGraphImage";
@@ -150,18 +144,18 @@ export default function Note({ note, noteId, accessToken }: NoteProps) {
 
       dispatch(clearStreaming());
 
-      dispatch(
-        streamNoteKnowledge({
-          accessToken,
-          noteId: noteId, // Use the specific noteId instead of fallback logic
-          prompt: pendingPrompt,
-        })
-      ).then(() => {
-        dispatch(clearPendingPrompt());
-        // Refresh the note after streaming to get the updated content
-        dispatch(fetchNoteById({ accessToken, noteId: noteId }));
-        streamRef.current = false;
-      });
+      // dispatch(
+      //   streamNoteKnowledge({
+      //     accessToken,
+      //     noteId: noteId, // Use the specific noteId instead of fallback logic
+      //     prompt: pendingPrompt,
+      //   })
+      // ).then(() => {
+      //   dispatch(clearPendingPrompt());
+      //   // Refresh the note after streaming to get the updated content
+      //   dispatch(fetchNoteById({ accessToken, noteId: noteId }));
+      //   streamRef.current = false;
+      // });
     }
   }, [
     isLoading,
