@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { Note, NoteType } from "@cosmic-dolphin/api";
 import { createNote, fetchNote } from "@/lib/repository/notes.repo";
-import { streamKnowledge } from "@/lib/repository/knowledge.repo";
 import {
   StreamingTask,
   StreamEvent,
@@ -60,32 +59,6 @@ export const fetchNoteById = createAsyncThunk(
   async ({ accessToken, noteId }: { accessToken: string; noteId: number }) => {
     const note = await fetchNote(accessToken, noteId);
     return note;
-  }
-);
-
-// Async thunk for streaming knowledge
-export const streamNoteKnowledge = createAsyncThunk(
-  "notes/streamKnowledge",
-  async (
-    {
-      accessToken,
-      noteId,
-      prompt,
-    }: {
-      accessToken: string;
-      noteId: number;
-      prompt: string;
-    },
-    { dispatch }
-  ) => {
-    const streamResponse = await streamKnowledge(accessToken, noteId, prompt);
-
-    // Use the new stream parser system
-    await createStreamParser(streamResponse, (event: StreamEvent) => {
-      dispatch(handleStreamEvent(event));
-    });
-
-    return { success: true };
   }
 );
 
@@ -152,23 +125,6 @@ const notesSlice = createSlice({
       .addCase(fetchNoteById.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.error.message || "Failed to fetch note";
-      })
-      .addCase(streamNoteKnowledge.pending, (state) => {
-        state.isStreaming = true;
-        state.streamError = null;
-        state.streamStatus = "Processing your request...";
-        state.streamingTokens = [];
-        state.streamingTasks = [];
-      })
-      .addCase(streamNoteKnowledge.fulfilled, (state) => {
-        state.isStreaming = false;
-        state.streamStatus = "";
-      })
-      .addCase(streamNoteKnowledge.rejected, (state, action) => {
-        state.isStreaming = false;
-        state.streamError =
-          action.error.message || "Failed to stream knowledge";
-        state.streamStatus = "";
       });
   },
 });
