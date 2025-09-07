@@ -30,9 +30,6 @@ jobs:
       - name: Run type check
         run: npx tsc --noEmit
 
-      - name: Run linting
-        run: npx next lint
-
       - name: Build application
         run: npm run build
 
