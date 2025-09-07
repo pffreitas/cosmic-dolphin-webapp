@@ -87,6 +87,9 @@ jobs:
         run: doctl registry login
 
       - name: Build Docker image
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         run: |
           docker build -t $IMAGE_NAME .
 
