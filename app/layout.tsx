@@ -2,7 +2,6 @@ import HeaderAuth from "@/components/header-auth";
 import { GeistSans } from "geist/font/sans";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
-import Sidebar from "@/components/sidebar/sidebar";
 import Body from "./body";
 import ReduxProvider from "@/components/providers/redux-provider";
 import Link from "next/link";

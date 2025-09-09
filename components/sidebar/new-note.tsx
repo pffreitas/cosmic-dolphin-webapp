@@ -1,12 +1,35 @@
 "use client";
 
+import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import ChatBox from "../chat/chat-box";
+import { useRouter } from "next/navigation";
+import { createBookmark } from "@/lib/store/slices/bookmarksSlice";
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 
 interface NewNoteButtonProps {}
 
 export default function NewNoteButton({}: NewNoteButtonProps) {
   const [showOverlay, setShowOverlay] = useState(false);
+  const [url, setUrl] = useState("");
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const createLoading = useAppSelector(
+    (state) => state.bookmarks.createLoading,
+  );
+
+  const handleCreateBookmark = async () => {
+    const result = await dispatch(
+      createBookmark({
+        sourceUrl: url,
+      }),
+    );
+
+    if (createBookmark.fulfilled.match(result)) {
+      setShowOverlay(false);
+      setUrl("");
+      router.push(`/bookmarks/${result.payload.id}`);
+    }
+  };
 
   const handleNewNote = () => {
     setShowOverlay(true);
@@ -36,12 +59,26 @@ export default function NewNoteButton({}: NewNoteButtonProps) {
         <div className="fixed inset-0 bg-slate-200 bg-opacity-50 backdrop-blur-sm z-50">
           <div className="fixed inset-0" onClick={handleOverlayClick}></div>
           <div>
-            <div className="absolute w-1/2 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 rounded-lg shadow-lg">
-              <ChatBox
-                onSubmit={() => {
-                  handleOverlayClick();
+            <div className="absolute w-1/2 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 rounded-lg shadow-lg flex  gap-2">
+              <input
+                type="text"
+                className="w-full p-2 focus:outline-none "
+                value={url}
+                autoFocus={true}
+                disabled={createLoading}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !createLoading) {
+                    handleCreateBookmark();
+                  }
                 }}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="URL"
               />
+              {createLoading && (
+                <div className="flex items-center px-2">
+                  <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -53,7 +90,7 @@ export default function NewNoteButton({}: NewNoteButtonProps) {
           handleNewNote();
         }}
       >
-        <div className="flex-1 mx-2">New Note</div>
+        <div className="flex-1 mx-2">New Bookmark</div>
         <div className="flex gap-1">
           <span className="flex font-thin uppercase h-5 w-5 items-center justify-center rounded border font-mono text-xs border-borderMain/50 ring-borderMain/50 divide-borderMain/50 dark:divide-borderMainDark/50  dark:ring-borderMainDark/50 dark:border-borderMainDark/50 bg-transparent00">
             ⌘

@@ -1,9 +1,9 @@
 import { configureStore } from "@reduxjs/toolkit";
-import notesReducer from "./slices/notesSlice";
+import bookmarksReducer from "./slices/bookmarksSlice";
 
 export const store = configureStore({
   reducer: {
-    notes: notesReducer,
+    bookmarks: bookmarksReducer,
   },
 });
 
