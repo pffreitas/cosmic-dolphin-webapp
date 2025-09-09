@@ -1,9 +1,8 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createBookmark } from "@/lib/store/slices/bookmarksSlice";
+import { createBookmark, clearErrors } from "@/lib/store/slices/bookmarksSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 
 interface NewNoteButtonProps {}
@@ -14,14 +13,16 @@ export default function NewNoteButton({}: NewNoteButtonProps) {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const createLoading = useAppSelector(
-    (state) => state.bookmarks.createLoading,
+    (state) => state.bookmarks.createLoading
   );
+  const createError = useAppSelector((state) => state.bookmarks.createError);
 
   const handleCreateBookmark = async () => {
+    dispatch(clearErrors()); // Clear any previous errors
     const result = await dispatch(
       createBookmark({
         sourceUrl: url,
-      }),
+      })
     );
 
     if (createBookmark.fulfilled.match(result)) {
@@ -37,6 +38,7 @@ export default function NewNoteButton({}: NewNoteButtonProps) {
 
   const handleOverlayClick = () => {
     setShowOverlay(false);
+    dispatch(clearErrors()); // Clear errors when closing overlay
   };
 
   useEffect(() => {
@@ -74,10 +76,9 @@ export default function NewNoteButton({}: NewNoteButtonProps) {
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="URL"
               />
-              {createLoading && (
-                <div className="flex items-center px-2">
-                  <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
-                </div>
+
+              {createError && (
+                <div className="text-red-600 p-2 text-sm">{createError}</div>
               )}
             </div>
           </div>

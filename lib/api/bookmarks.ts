@@ -13,7 +13,7 @@ export namespace BookmarksAPI {
       new Configuration({
         basePath: process.env.NEXT_PUBLIC_API_URL,
         accessToken,
-      })
+      }),
     );
   }
 
@@ -32,10 +32,17 @@ export namespace BookmarksAPI {
   export async function create(bookmarkData: any): Promise<any> {
     const bookmarksApi = await getApiInstance();
 
-    const response = await bookmarksApi.bookmarksCreate({
-      createBookmarkRequest: bookmarkData,
-    });
-    return response;
+    try {
+      const response = await bookmarksApi.bookmarksCreate({
+        createBookmarkRequest: bookmarkData,
+      });
+      return response;
+    } catch (error: any) {
+      if (error?.response?.data?.error) {
+        throw new Error(error.response.data.error);
+      }
+      throw error;
+    }
   }
 
   export async function findById(id: string): Promise<Bookmark | null> {

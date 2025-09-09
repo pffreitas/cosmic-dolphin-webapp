@@ -27,7 +27,7 @@ export const createBookmark = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(error.message || "Failed to create bookmark");
     }
-  },
+  }
 );
 
 export const fetchBookmarks = createAsyncThunk(
@@ -39,7 +39,7 @@ export const fetchBookmarks = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(error.message || "Failed to fetch bookmarks");
     }
-  },
+  }
 );
 
 const bookmarksSlice = createSlice({
@@ -63,10 +63,11 @@ const bookmarksSlice = createSlice({
         (state, action: PayloadAction<Bookmark>) => {
           state.createLoading = false;
           state.bookmarks.unshift(action.payload);
-        },
+        }
       )
       .addCase(createBookmark.rejected, (state, action) => {
         state.createLoading = false;
+        console.log("createBookmark.rejected", action.payload);
         state.createError = action.payload as string;
       })
       // Fetch bookmarks
@@ -79,7 +80,7 @@ const bookmarksSlice = createSlice({
         (state, action: PayloadAction<Bookmark[]>) => {
           state.loading = false;
           state.bookmarks = action.payload;
-        },
+        }
       )
       .addCase(fetchBookmarks.rejected, (state, action) => {
         state.loading = false;
