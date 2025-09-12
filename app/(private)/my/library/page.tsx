@@ -1,6 +1,7 @@
 import { BookmarksAPI } from "@/lib/api/bookmarks";
 import { Bookmark } from "@cosmic-dolphin/api";
 import Link from "next/link";
+import { Suspense } from "react";
 
 const NoteCard = ({ bookmark }: { bookmark: Bookmark }) => {
   return (
@@ -23,7 +24,7 @@ export default async function Index() {
   const bookmarks = await BookmarksAPI.list();
 
   return (
-    <div>
+    <Suspense fallback={<div>Loading...</div>}>
       <div className="flex gap-2 flex-col">
         {bookmarks?.map((bookmark: Bookmark) => (
           <div key={bookmark.id}>
@@ -32,6 +33,6 @@ export default async function Index() {
           </div>
         ))}
       </div>
-    </div>
+    </Suspense>
   );
 }

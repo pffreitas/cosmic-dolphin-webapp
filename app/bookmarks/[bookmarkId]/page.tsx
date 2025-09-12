@@ -1,3 +1,4 @@
+import { BookmarkBody } from "@/components/bookmark/BookmarkBody";
 import { BookmarksAPI } from "@/lib/api/bookmarks";
 import _ from "lodash";
 import { Suspense, useEffect } from "react";
@@ -19,9 +20,7 @@ export default async function Index({ params }: PageProps) {
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <h1>{bookmark.title}</h1>
-      <p>{bookmark.summary}</p>
-      <p>{bookmark.sourceUrl}</p>
+      <BookmarkBody bookmark={bookmark} />
     </Suspense>
   );
 }
