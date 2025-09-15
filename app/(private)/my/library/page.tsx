@@ -20,19 +20,40 @@ const NoteCard = ({ bookmark }: { bookmark: Bookmark }) => {
   );
 };
 
-export default async function Index() {
+async function BookmarksList() {
   const bookmarks = await BookmarksAPI.list();
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <div className="flex gap-2 flex-col">
-        {bookmarks?.map((bookmark: Bookmark) => (
-          <div key={bookmark.id}>
-            <NoteCard bookmark={bookmark} />
-            <div className="border-b border-gray-300" />
-          </div>
-        ))}
+    <div className="flex gap-2 flex-col">
+      {bookmarks?.map((bookmark: Bookmark) => (
+        <div key={bookmark.id}>
+          <NoteCard bookmark={bookmark} />
+          <div className="border-b border-gray-300" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const LoadingBookmarks = () => (
+  <div className="flex gap-2 flex-col">
+    {Array.from({ length: 3 }).map((_, i) => (
+      <div key={i} className="animate-pulse">
+        <div className="p-4">
+          <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded mb-2 w-3/4"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mt-1"></div>
+        </div>
+        <div className="border-b border-gray-300" />
       </div>
+    ))}
+  </div>
+);
+
+export default function Index() {
+  return (
+    <Suspense fallback={<LoadingBookmarks />}>
+      <BookmarksList />
     </Suspense>
   );
 }
