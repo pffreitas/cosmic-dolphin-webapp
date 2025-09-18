@@ -112,7 +112,7 @@ export default function CosmicLoading() {
         src="/animations/loading.json"
         loop
         autoplay
-        className="w-10 h-10"
+        className="w-8 h-8"
       />
       <RotatingText
         className="flex-1"

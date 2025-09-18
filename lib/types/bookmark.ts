@@ -1,3 +1,5 @@
+import { Bookmark } from "@cosmic-dolphin/api";
+
 export interface BookmarkMetadata {
   title?: string;
   description?: string;
@@ -6,18 +8,6 @@ export interface BookmarkMetadata {
   type?: string;
   url?: string;
   [key: string]: any;
-}
-
-export interface Bookmark {
-  id: string;
-  user_id: string;
-  source_url: string;
-  title: string | null;
-  metadata: BookmarkMetadata | null;
-  body: string | null;
-  summary: string | null;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface CreateBookmarkRequest {

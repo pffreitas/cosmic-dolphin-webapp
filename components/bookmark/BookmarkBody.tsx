@@ -1,159 +1,86 @@
 "use client";
+import { useEffect } from "react";
+import { useAppSelector, useAppDispatch } from "@/lib/store/hooks";
+import { setCurrentBookmarkFromApi } from "@/lib/store/slices/realtimeSlice";
 import { Bookmark } from "@cosmic-dolphin/api";
-import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
 import CosmicMarkdown from "../markdown/CosmicMarkdown";
 import OpenGraphWebpage from "../opengraph/OpenGraphWebpage";
 import CosmicLoading from "../loading/CosmicLoading";
+import { ConnectionStatus } from "../realtime/ConnectionStatus";
 import {
   Task as TaskComponent,
-  TaskItemFile,
   TaskContent,
   TaskItem,
   TaskTrigger,
 } from "../ai-elements/task";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-
-type Task = {
-  taskID: string;
-  name: string;
-  status: "running" | "completed" | "error";
-  subTasks: Record<string, Task>;
-};
+import { Card, CardContent } from "../ui/card";
+import { Button } from "../ui/button";
+import { RefreshCcwIcon, ShareIcon, ThumbsUpIcon } from "lucide-react";
+import { Action, Actions } from "../ai-elements/actions";
+import { Separator } from "../ui/separator";
 
 export const BookmarkBody = (props: { bookmark: Bookmark }) => {
-  const [bookmark, setBookmark] = useState(props.bookmark);
-  const [currentTask, setCurrentTask] = useState<Task[]>([
-    {
-      taskID: "1",
-      name: "Task 1",
-      status: "running",
-      subTasks: {
-        "1": {
-          taskID: "1",
-          name: "Sub Task 1",
-          status: "running",
-          subTasks: {},
-        },
-        "2": {
-          taskID: "2",
-          name: "Sub Task 2",
-          status: "completed",
-          subTasks: {},
-        },
-        "3": {
-          taskID: "3",
-          name: "Sub Task 3",
-          status: "error",
-          subTasks: {},
-        },
-      },
-    },
-    {
-      taskID: "2",
-      name: "Task 2",
-      status: "completed",
-      subTasks: {},
-    },
-    {
-      taskID: "3",
-      name: "Task 3",
-      status: "error",
-      subTasks: {},
-    },
-  ]);
-  const [isLoading, setIsLoading] = useState(false);
-  const supabase = createClient();
+  const dispatch = useAppDispatch();
+  const { currentBookmark, tasks, isLoading } = useAppSelector(
+    (state) => state.realtime
+  );
 
   useEffect(() => {
-    supabase
-      .channel("bookmarks")
-      .on("broadcast", { event: "update" }, (payload) => {
-        setIsLoading(true);
-        if (payload.payload.type === "bookmark.updated") {
-          setIsLoading(false);
-          setBookmark(payload.payload.data as Bookmark);
-        }
+    if (
+      props.bookmark &&
+      (!currentBookmark || currentBookmark.id !== props.bookmark.id)
+    ) {
+      dispatch(setCurrentBookmarkFromApi(props.bookmark));
+    }
+  }, [props.bookmark, currentBookmark, dispatch]);
 
-        if (payload.payload.type === "task.started") {
-          console.log("task.started", currentTask);
-          setCurrentTask([
-            ...currentTask,
-            {
-              taskID: payload.payload.data.taskID,
-              name: payload.payload.data.name,
-              status: "running",
-              subTasks: {},
-            },
-          ]);
-        }
-        if (payload.payload.type === "task.completed") {
-          console.log("task.completed", currentTask);
-          setCurrentTask(
-            currentTask.map((task) =>
-              task.taskID === payload.payload.data.taskID
-                ? {
-                    ...task,
-                    status: "completed",
-                    subTasks: payload.payload.data.subTasks as Record<
-                      string,
-                      Task
-                    >,
-                  }
-                : task
-            )
-          );
-          console.log("task.completed", currentTask);
-        }
+  const bookmark = currentBookmark || props.bookmark;
 
-        if (payload.payload.type === "task.updated") {
-          console.log("task.updated", currentTask);
-          setCurrentTask(
-            currentTask.map((task) =>
-              task.taskID === payload.payload.data.taskID
-                ? {
-                    ...task,
-                    subTasks: payload.payload.data.subTasks as Record<
-                      string,
-                      Task
-                    >,
-                  }
-                : task
-            )
-          );
-          console.log("task.updated", currentTask);
-        }
+  console.log(">>>>> tasks", tasks);
+  let runningTasks = [
+    ...tasks.filter(
+      (task) => task.status === "running" || task.status === "pending"
+    ),
+    ...tasks
+      .flatMap((task) => Object.values(task.subTasks))
+      .filter(
+        (subTask) =>
+          subTask.status === "running" || subTask.status === "pending"
+      ),
+    ,
+  ].filter((task) => task !== undefined);
 
-        if (payload.payload.type === "task.error") {
-          console.log("task.error", currentTask);
-          setCurrentTask(
-            currentTask.map((task) =>
-              task.taskID === payload.payload.data.taskID
-                ? {
-                    ...task,
-                    status: "error",
-                    subTasks: payload.payload.data.subTasks as Record<
-                      string,
-                      Task
-                    >,
-                  }
-                : task
-            )
-          );
-        }
-      })
-      .subscribe((status, error) =>
-        console.log(
-          "Subscription to bookmarks channel established",
-          status,
-          error
-        )
-      );
-  }, [supabase, currentTask, isLoading, bookmark]);
+  console.log(">>>>> tasks", runningTasks);
+  const lastestRunningTask = runningTasks[runningTasks.length - 1];
 
-  console.log("currentTask", currentTask);
+  console.log(">>>>> lastestRunningTask", lastestRunningTask);
   return (
     <div className="flex flex-col gap-8">
+      <ConnectionStatus />
+
+      <Card>
+        <CardContent className="px-5 py-2">
+          <div className="flex flex-row gap-6 h-8 items-stretch">
+            <div className="w-[180px] flex">
+              <CosmicLoading />
+            </div>
+            <Separator orientation="vertical" className="w-px" />
+            <div className="flex-1 flex align-center">
+              {lastestRunningTask && (
+                <TaskComponent
+                  key={lastestRunningTask.taskID}
+                  className="w-full"
+                  open={lastestRunningTask.status === "running"}
+                >
+                  <TaskTrigger title={lastestRunningTask.name} status="none" />
+                  <TaskContent></TaskContent>
+                </TaskComponent>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {bookmark.metadata?.openGraph && (
         <OpenGraphWebpage
           title={bookmark.metadata.openGraph.title || ""}
@@ -162,35 +89,21 @@ export const BookmarkBody = (props: { bookmark: Bookmark }) => {
           url={bookmark.metadata.openGraph.url || ""}
         />
       )}
-      {true && <div className="flex justify-center items-center"></div>}
-
-      {currentTask.length > 0 && (
-        <Card>
-          <CardContent>
-            <div className="flex flex-col gap-2 mt-6">
-              {currentTask.map((task) => (
-                <TaskComponent
-                  key={task.taskID}
-                  className="w-full sss"
-                  open={task.status === "running"}
-                >
-                  <TaskTrigger title={task.name} status={task.status} />
-                  <TaskContent>
-                    {Object.values(task.subTasks).map((subTask) => (
-                      <TaskItem key={subTask.taskID}>
-                        {subTask.name} - {subTask.status}
-                      </TaskItem>
-                    ))}
-                  </TaskContent>
-                </TaskComponent>
-              ))}
-              <CosmicLoading />
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {bookmark.summary && <CosmicMarkdown body={bookmark.summary} />}
+      <div className="flex">
+        <Actions>
+          <Action label="Like">
+            <RefreshCcwIcon className="size-4" />
+          </Action>
+          <Action label="Like">
+            <ThumbsUpIcon className="size-4" />
+          </Action>
+          <Action label="Share">
+            <ShareIcon className="size-4" />
+          </Action>
+        </Actions>
+      </div>
     </div>
   );
 };

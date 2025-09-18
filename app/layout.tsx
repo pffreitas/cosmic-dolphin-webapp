@@ -96,6 +96,7 @@ export default async function RootLayout({
                     <div className="flex-1 max-w-screen-lg mx-auto">
                       {children}
                     </div>
+                    <div className="h-2"></div>
                   </div>
                   <AppSidebar />
                 </main>
