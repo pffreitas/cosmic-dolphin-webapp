@@ -25,8 +25,8 @@ export interface Session {
   sessionID: string;
   refID: string;
   tasks: Record<string, Task>;
-  eventsReceivedCount: number;
-  lastReceivedEventTimestamp: number;
+  eventCount: number;
+  lastEventTimestamp: number;
   usage: UsagePart;
   error?: string;
 }

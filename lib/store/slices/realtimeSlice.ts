@@ -17,10 +17,8 @@ interface RealtimeState {
   activeSessionID: string | null;
 
   currentBookmark: Bookmark | null;
-  isLoading: boolean;
 
   connection: ConnectionState;
-  lastEventTimestamp: number | null;
 }
 
 const initialState: RealtimeState = {
@@ -28,7 +26,6 @@ const initialState: RealtimeState = {
   activeSessionID: null,
 
   currentBookmark: null,
-  isLoading: false,
   connection: {
     status: "disconnected",
     attempts: 0,
@@ -36,7 +33,6 @@ const initialState: RealtimeState = {
     lastError: null,
     isOnline: typeof navigator !== "undefined" ? navigator.onLine : true,
   },
-  lastEventTimestamp: null,
 };
 
 const realtimeSlice = createSlice({
@@ -92,8 +88,8 @@ const realtimeSlice = createSlice({
           sessionID,
           refID,
           tasks: {},
-          eventsReceivedCount: 0,
-          lastReceivedEventTimestamp: Date.now(),
+          eventCount: 0,
+          lastEventTimestamp: Date.now(),
           usage: {},
         };
       }
@@ -151,8 +147,8 @@ const realtimeSlice = createSlice({
       const { sessionID } = action.payload;
       const session = state.sessions[sessionID];
       if (session) {
-        session.eventsReceivedCount += 1;
-        session.lastReceivedEventTimestamp = Date.now();
+        session.eventCount += 1;
+        session.lastEventTimestamp = Date.now();
       }
     },
 
@@ -179,29 +175,19 @@ const realtimeSlice = createSlice({
     // Bookmark management
     setCurrentBookmark: (state, action: PayloadAction<Bookmark>) => {
       state.currentBookmark = action.payload;
-      state.lastEventTimestamp = Date.now();
     },
 
     setCurrentBookmarkFromApi: (state, action: PayloadAction<Bookmark>) => {
       console.log("setCurrentBookmarkFromApi", action.payload);
       state.currentBookmark = action.payload;
-      state.lastEventTimestamp = Date.now();
     },
 
     updateBookmark: (state, action: PayloadAction<Bookmark>) => {
       state.currentBookmark = action.payload;
-      state.isLoading = false;
-      state.lastEventTimestamp = Date.now();
     },
 
     updateBookmarkFromApi: (state, action: PayloadAction<Bookmark>) => {
       state.currentBookmark = action.payload;
-      state.isLoading = false;
-      state.lastEventTimestamp = Date.now();
-    },
-
-    setLoadingState: (state, action: PayloadAction<boolean>) => {
-      state.isLoading = action.payload;
     },
 
     // Event-specific handlers
@@ -230,10 +216,6 @@ const realtimeSlice = createSlice({
         }
 
         session.tasks[taskID].messages[messageID].parts[partID] = part;
-
-        // Increment events received count
-        session.eventsReceivedCount += 1;
-        session.lastReceivedEventTimestamp = Date.now();
       }
     },
 
@@ -254,10 +236,6 @@ const realtimeSlice = createSlice({
         session.tasks[taskID].messages[messageID]
       ) {
         // Handle message-level updates as needed
-
-        // Increment events received count
-        session.eventsReceivedCount += 1;
-        session.lastReceivedEventTimestamp = Date.now();
       }
     },
 
@@ -273,16 +251,11 @@ const realtimeSlice = createSlice({
       const session = state.sessions[sessionID];
       if (session) {
         session.error = error;
-
-        // Increment events received count
-        session.eventsReceivedCount += 1;
-        session.lastReceivedEventTimestamp = Date.now();
       }
     },
 
     handleBookmarkUpdated: (state, action: PayloadAction<Bookmark>) => {
       state.currentBookmark = action.payload;
-      state.lastEventTimestamp = Date.now();
     },
 
     handleTaskStarted: (
@@ -316,8 +289,6 @@ const realtimeSlice = createSlice({
         state.sessions[action.payload.sessionID].tasks[action.payload.taskID] =
           newTask;
       }
-
-      state.lastEventTimestamp = Date.now();
     },
 
     handleTaskUpdated: (
@@ -335,7 +306,6 @@ const realtimeSlice = createSlice({
         session.tasks[action.payload.taskID].status = action.payload.status;
         session.tasks[action.payload.taskID].name = action.payload.name;
         session.tasks[action.payload.taskID].subTasks = action.payload.subTasks;
-        state.lastEventTimestamp = Date.now();
       }
     },
 
@@ -351,7 +321,6 @@ const realtimeSlice = createSlice({
       if (session) {
         session.tasks[action.payload.taskID].status = "completed";
         session.tasks[action.payload.taskID].subTasks = action.payload.subTasks;
-        state.lastEventTimestamp = Date.now();
       }
     },
 
@@ -368,7 +337,6 @@ const realtimeSlice = createSlice({
       if (session) {
         session.tasks[action.payload.taskID].status = action.payload.status;
         session.tasks[action.payload.taskID].subTasks = action.payload.subTasks;
-        state.lastEventTimestamp = Date.now();
       }
     },
 
@@ -376,6 +344,15 @@ const realtimeSlice = createSlice({
       const event = action.payload;
 
       console.log(event.type, event.data);
+
+      if ("sessionID" in event.data) {
+        realtimeSlice.caseReducers.incrementEventsReceived(state, {
+          type: "incrementEventsReceived",
+          payload: {
+            sessionID: event.data.sessionID,
+          },
+        });
+      }
 
       switch (event.type) {
         case "bookmark.updated":
@@ -486,8 +463,6 @@ const realtimeSlice = createSlice({
           });
           break;
       }
-
-      state.lastEventTimestamp = Date.now();
     },
   },
 });
@@ -525,7 +500,6 @@ export const {
   setCurrentBookmarkFromApi,
   updateBookmark,
   updateBookmarkFromApi,
-  setLoadingState,
 
   // Event queue management
   processEvent,

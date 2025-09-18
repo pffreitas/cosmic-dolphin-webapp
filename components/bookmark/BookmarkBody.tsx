@@ -18,15 +18,16 @@ import { Button } from "../ui/button";
 import { RefreshCcwIcon, ShareIcon, ThumbsUpIcon } from "lucide-react";
 import { Action, Actions } from "../ai-elements/actions";
 import { Separator } from "../ui/separator";
-import { useActiveSession } from "@/lib/store/realtimeSelectors";
+import {
+  useActiveSession,
+  useSessionByBookmark,
+} from "@/lib/store/realtimeSelectors";
 
 export const BookmarkBody = (props: { bookmark: Bookmark }) => {
   const dispatch = useAppDispatch();
-  const { currentBookmark, isLoading } = useAppSelector(
-    (state) => state.realtime
-  );
+  const { currentBookmark } = useAppSelector((state) => state.realtime);
 
-  const activeSession = useActiveSession();
+  const activeSession = useSessionByBookmark(props.bookmark.id);
   console.log("activeSession", activeSession);
 
   useEffect(() => {
