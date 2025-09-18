@@ -150,6 +150,60 @@ const realtimeSlice = createSlice({
       state.eventQueue.push(action.payload);
     },
 
+    processEvent: (state, action: PayloadAction<RealtimeEventPayload>) => {
+      const event = action.payload;
+      console.log(event.type, event.data);
+
+      switch (event.type) {
+        case "bookmark.updated":
+          state.isLoading = true;
+          state.currentBookmark = event.data;
+          state.isLoading = false;
+          break;
+
+        case "task.started":
+          const newTask: Task = {
+            taskID: event.data.taskID,
+            name: event.data.name,
+            status: "running",
+            subTasks: {},
+          };
+          state.tasks.push(newTask);
+          break;
+
+        case "task.completed":
+          const completedTaskIndex = state.tasks.findIndex(
+            (task) => task.taskID === event.data.taskID
+          );
+          if (completedTaskIndex !== -1) {
+            state.tasks[completedTaskIndex].status = "completed";
+            state.tasks[completedTaskIndex].subTasks = event.data.subTasks;
+          }
+          break;
+
+        case "task.updated":
+          const updatedTaskIndex = state.tasks.findIndex(
+            (task) => task.taskID === event.data.taskID
+          );
+          if (updatedTaskIndex !== -1) {
+            state.tasks[updatedTaskIndex].subTasks = event.data.subTasks;
+          }
+          break;
+
+        case "task.error":
+          const errorTaskIndex = state.tasks.findIndex(
+            (task) => task.taskID === event.data.taskID
+          );
+          if (errorTaskIndex !== -1) {
+            state.tasks[errorTaskIndex].status = "error";
+            state.tasks[errorTaskIndex].subTasks = event.data.subTasks;
+          }
+          break;
+      }
+
+      state.lastEventTimestamp = Date.now();
+    },
+
     processEventQueue: (state) => {
       // Process queued events when reconnecting
       state.eventQueue.forEach((event) => {
@@ -224,6 +278,7 @@ export const {
   updateTaskStatus,
   updateTaskSubTasks,
   queueEvent,
+  processEvent,
   processEventQueue,
   clearEventQueue,
   resetRealtimeState,

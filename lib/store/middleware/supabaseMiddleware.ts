@@ -6,40 +6,24 @@ import {
   setConnectionError,
   setOnlineStatus,
   resetConnection,
-  updateBookmarkFromApi,
-  setLoadingState,
-  addTask,
-  updateTaskStatus,
-  updateTaskSubTasks,
-  queueEvent,
-  processEventQueue,
+  processEvent,
 } from "../slices/realtimeSlice";
-import {
-  RealtimeConfig,
-  DEFAULT_REALTIME_CONFIG,
-  RealtimeEventPayload,
-} from "@/lib/types/realtime";
+import { RealtimeEventPayload } from "@/lib/types/realtime";
 import { RootState } from "../index";
 
 class SupabaseRealtimeManager {
   private channel: RealtimeChannel | null = null;
   private reconnectTimer: NodeJS.Timeout | null = null;
-  private heartbeatTimer: NodeJS.Timeout | null = null;
   private connectionTimeout: NodeJS.Timeout | null = null;
   private dispatch: any;
   private getState: () => RootState;
-  private config: RealtimeConfig;
   private supabase: ReturnType<typeof createClient>;
   private isDestroyed = false;
+  private maxAttempts = 3;
 
-  constructor(
-    dispatch: any,
-    getState: () => RootState,
-    config: RealtimeConfig = DEFAULT_REALTIME_CONFIG
-  ) {
+  constructor(dispatch: any, getState: () => RootState) {
     this.dispatch = dispatch;
     this.getState = getState;
-    this.config = config;
     this.supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -73,9 +57,10 @@ class SupabaseRealtimeManager {
     if (state.status === "connected" || !state.isOnline) return;
 
     // Check retry limits
-    if (state.attempts >= this.config.maxRetries) {
+    if (state.attempts >= this.maxAttempts) {
+      this.dispatch(setConnectionStatus("disconnected"));
       this.dispatch(
-        setConnectionError(`Max retries (${this.config.maxRetries}) exceeded`)
+        setConnectionError(`Max retries (${this.maxAttempts}) exceeded`)
       );
       return;
     }
@@ -90,10 +75,10 @@ class SupabaseRealtimeManager {
       // Create new channel
       this.channel = this.supabase.channel("bookmarks");
 
-      // Set connection timeout
+      // Set connection timeout (10 seconds)
       this.connectionTimeout = setTimeout(() => {
         this.handleConnectionTimeout();
-      }, this.config.connectionTimeout);
+      }, 10000);
 
       // Setup event handlers
       this.channel
@@ -119,8 +104,6 @@ class SupabaseRealtimeManager {
   private handleConnectionSuccess = () => {
     this.dispatch(setConnectionStatus("connected"));
     this.dispatch(resetConnection());
-    this.startHeartbeat();
-    this.processQueuedEvents();
     console.log("Supabase realtime connection established");
   };
 
@@ -140,7 +123,6 @@ class SupabaseRealtimeManager {
   private handleConnectionClosed = () => {
     console.warn("Supabase connection closed");
     this.dispatch(setConnectionStatus("disconnected"));
-    this.stopHeartbeat();
     this.scheduleReconnect();
   };
 
@@ -149,84 +131,20 @@ class SupabaseRealtimeManager {
 
     try {
       const event: RealtimeEventPayload = payload.payload;
-
-      // If disconnected, queue the event
-      if (this.getState().realtime.connection.status !== "connected") {
-        this.dispatch(queueEvent(event));
-        return;
-      }
-
-      // Process the event
-      this.processEvent(event);
+      this.dispatch(processEvent(event));
     } catch (error) {
       console.error("Error processing realtime event:", error);
     }
-  };
-
-  private processEvent = (event: RealtimeEventPayload) => {
-    console.log(event.type, event.data);
-    switch (event.type) {
-      case "bookmark.updated":
-        this.dispatch(setLoadingState(true));
-        this.dispatch(updateBookmarkFromApi(event.data));
-        break;
-
-      case "task.started":
-        this.dispatch(
-          addTask({
-            taskID: event.data.taskID,
-            name: event.data.name,
-          })
-        );
-        break;
-
-      case "task.completed":
-        this.dispatch(
-          updateTaskStatus({
-            taskID: event.data.taskID,
-            status: "completed",
-            subTasks: event.data.subTasks,
-          })
-        );
-        break;
-
-      case "task.updated":
-        this.dispatch(
-          updateTaskSubTasks({
-            taskID: event.data.taskID,
-            subTasks: event.data.subTasks,
-          })
-        );
-        break;
-
-      case "task.error":
-        this.dispatch(
-          updateTaskStatus({
-            taskID: event.data.taskID,
-            status: "error",
-            subTasks: event.data.subTasks,
-          })
-        );
-        break;
-    }
-  };
-
-  private processQueuedEvents = () => {
-    this.dispatch(processEventQueue());
   };
 
   private scheduleReconnect = () => {
     if (this.isDestroyed || this.reconnectTimer) return;
 
     const state = this.getState().realtime.connection;
-    if (state.attempts >= this.config.maxRetries) return;
+    if (state.attempts >= this.maxAttempts) return;
 
-    // Exponential backoff with jitter
-    const delay = Math.min(
-      this.config.baseDelay * Math.pow(2, state.attempts) +
-        Math.random() * 1000,
-      this.config.maxDelay
-    );
+    // Simple delay with exponential backoff
+    const delay = Math.min(1000 * Math.pow(2, state.attempts), 30000);
 
     console.log(
       `Scheduling reconnect in ${Math.round(delay)}ms (attempt ${state.attempts + 1})`
@@ -240,42 +158,9 @@ class SupabaseRealtimeManager {
     }, delay);
   };
 
-  private startHeartbeat = () => {
-    this.stopHeartbeat();
-
-    this.heartbeatTimer = setInterval(() => {
-      if (this.isDestroyed) return;
-
-      // Send a simple ping to check connection health
-      if (
-        this.channel &&
-        this.getState().realtime.connection.status === "connected"
-      ) {
-        try {
-          this.channel.send({
-            type: "broadcast",
-            event: "ping",
-            payload: { timestamp: Date.now() },
-          });
-        } catch (error) {
-          console.error("Heartbeat failed:", error);
-          this.handleConnectionError("Heartbeat failed");
-        }
-      }
-    }, this.config.heartbeatInterval);
-  };
-
-  private stopHeartbeat = () => {
-    if (this.heartbeatTimer) {
-      clearInterval(this.heartbeatTimer);
-      this.heartbeatTimer = null;
-    }
-  };
-
   private clearTimers = () => {
     this.clearConnectionTimeout();
     this.clearReconnectTimer();
-    this.stopHeartbeat();
   };
 
   private clearConnectionTimeout = () => {
@@ -320,11 +205,7 @@ class SupabaseRealtimeManager {
 // Singleton instance
 let realtimeManager: SupabaseRealtimeManager | null = null;
 
-export const createSupabaseMiddleware = (
-  config?: Partial<RealtimeConfig>
-): Middleware => {
-  const finalConfig = { ...DEFAULT_REALTIME_CONFIG, ...config };
-
+export const createSupabaseMiddleware = (): Middleware => {
   return (store) => (next) => (action: unknown) => {
     const result = next(action);
 
@@ -332,8 +213,7 @@ export const createSupabaseMiddleware = (
     if (!realtimeManager && typeof window !== "undefined") {
       realtimeManager = new SupabaseRealtimeManager(
         store.dispatch,
-        store.getState,
-        finalConfig
+        store.getState
       );
 
       // Auto-connect if online
