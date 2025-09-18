@@ -10,7 +10,65 @@ export interface Task {
   taskID: string;
   name: string;
   status: "running" | "completed" | "error" | "pending";
-  subTasks: Record<string, Task>;
+  subTasks: Record<string, SubTask>;
+  messages: Record<string, Message>;
+}
+
+export interface SubTask {
+  taskID: string;
+  name: string;
+  status: "pending" | "running" | "completed" | "failed";
+  messages: Record<string, Message>;
+}
+
+export interface Session {
+  sessionID: string;
+  refID: string;
+  tasks: Record<string, Task>;
+  eventsReceivedCount: number;
+  lastReceivedEventTimestamp: number;
+  usage: UsagePart;
+  error?: string;
+}
+
+export interface Message {
+  sessionID: string;
+  messageID: string;
+  taskID: string;
+  parts: Record<string, MessagePart>;
+}
+
+export interface BaseMessagePart {
+  partID: string;
+  type: "text" | "tool";
+}
+
+export interface TextPart extends BaseMessagePart {
+  partID: string;
+  type: "text";
+  text: string;
+}
+
+export interface ToolPart extends BaseMessagePart {
+  partID: string;
+  type: "tool";
+  toolName: string;
+  callID: string;
+  status: "pending" | "running" | "completed" | "error";
+  input: string;
+  output: string;
+  metadata: Record<string, any>;
+  title: string;
+}
+
+export type MessagePart = TextPart | ToolPart | UsagePart;
+
+export interface UsagePart {
+  inputTokens?: number;
+  outputTokens?: number;
+  totalTokens?: number;
+  reasoningTokens?: number;
+  cachedInputTokens?: number;
 }
 
 export type RealtimeEventType =
@@ -18,7 +76,11 @@ export type RealtimeEventType =
   | "task.started"
   | "task.completed"
   | "task.updated"
-  | "task.error";
+  | "task.failed"
+  | "session.started"
+  | "session.error"
+  | "message.updated"
+  | "message.part.updated";
 
 export interface RealtimeEvent {
   type: RealtimeEventType;
@@ -34,6 +96,7 @@ export interface BookmarkUpdatedEvent {
 export interface TaskStartedEvent {
   type: "task.started";
   data: {
+    sessionID: string;
     taskID: string;
     name: string;
   };
@@ -42,25 +105,70 @@ export interface TaskStartedEvent {
 export interface TaskCompletedEvent {
   type: "task.completed";
   data: {
+    sessionID: string;
     taskID: string;
-    subTasks: Record<string, Task>;
+    subTasks: Record<string, SubTask>;
   };
 }
 
 export interface TaskUpdatedEvent {
   type: "task.updated";
   data: {
+    sessionID: string;
     taskID: string;
-    subTasks: Record<string, Task>;
+    name: string;
+    status: Task["status"];
+    subTasks: Record<string, SubTask>;
   };
 }
 
-export interface TaskErrorEvent {
-  type: "task.error";
+export interface TaskFailedEvent {
+  type: "task.failed";
   data: {
+    sessionID: string;
     taskID: string;
-    subTasks: Record<string, Task>;
+    name: string;
+    status: Task["status"];
+    subTasks: Record<string, SubTask>;
     error?: string;
+  };
+}
+
+export interface SessionStartedEvent {
+  type: "session.started";
+  data: {
+    sessionID: string;
+    refID: string;
+  };
+}
+
+export interface SessionErrorEvent {
+  type: "session.error";
+  data: {
+    sessionID: string;
+    error: string;
+    context?: Record<string, any>;
+  };
+}
+
+export interface MessageUpdatedEvent {
+  type: "message.updated";
+  data: {
+    sessionID: string;
+    taskID: string;
+    messageID: string;
+    metadata?: Record<string, any>;
+  };
+}
+
+export interface MessagePartUpdatedEvent {
+  type: "message.part.updated";
+  data: {
+    sessionID: string;
+    taskID: string;
+    messageID: string;
+    partID: string;
+    part: MessagePart;
   };
 }
 
@@ -69,7 +177,11 @@ export type RealtimeEventPayload =
   | TaskStartedEvent
   | TaskCompletedEvent
   | TaskUpdatedEvent
-  | TaskErrorEvent;
+  | TaskFailedEvent
+  | SessionStartedEvent
+  | SessionErrorEvent
+  | MessageUpdatedEvent
+  | MessagePartUpdatedEvent;
 
 export interface ConnectionState {
   status: ConnectionStatus;

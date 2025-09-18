@@ -18,12 +18,16 @@ import { Button } from "../ui/button";
 import { RefreshCcwIcon, ShareIcon, ThumbsUpIcon } from "lucide-react";
 import { Action, Actions } from "../ai-elements/actions";
 import { Separator } from "../ui/separator";
+import { useActiveSession } from "@/lib/store/realtimeSelectors";
 
 export const BookmarkBody = (props: { bookmark: Bookmark }) => {
   const dispatch = useAppDispatch();
-  const { currentBookmark, tasks, isLoading } = useAppSelector(
+  const { currentBookmark, isLoading } = useAppSelector(
     (state) => state.realtime
   );
+
+  const activeSession = useActiveSession();
+  console.log("activeSession", activeSession);
 
   useEffect(() => {
     if (
@@ -36,24 +40,6 @@ export const BookmarkBody = (props: { bookmark: Bookmark }) => {
 
   const bookmark = currentBookmark || props.bookmark;
 
-  console.log(">>>>> tasks", tasks);
-  let runningTasks = [
-    ...tasks.filter(
-      (task) => task.status === "running" || task.status === "pending"
-    ),
-    ...tasks
-      .flatMap((task) => Object.values(task.subTasks))
-      .filter(
-        (subTask) =>
-          subTask.status === "running" || subTask.status === "pending"
-      ),
-    ,
-  ].filter((task) => task !== undefined);
-
-  console.log(">>>>> tasks", runningTasks);
-  const lastestRunningTask = runningTasks[runningTasks.length - 1];
-
-  console.log(">>>>> lastestRunningTask", lastestRunningTask);
   return (
     <div className="flex flex-col gap-8">
       <ConnectionStatus />
@@ -66,16 +52,19 @@ export const BookmarkBody = (props: { bookmark: Bookmark }) => {
             </div>
             <Separator orientation="vertical" className="w-px" />
             <div className="flex-1 flex align-center">
-              {lastestRunningTask && (
+              {/* {lastestRunningTask && (
                 <TaskComponent
                   key={lastestRunningTask.taskID}
                   className="w-full"
                   open={lastestRunningTask.status === "running"}
                 >
-                  <TaskTrigger title={lastestRunningTask.name} status="none" />
+                  <TaskTrigger
+                    title={lastestRunningTask.name}
+                    status="running"
+                  />
                   <TaskContent></TaskContent>
                 </TaskComponent>
-              )}
+              )} */}
             </div>
           </div>
         </CardContent>

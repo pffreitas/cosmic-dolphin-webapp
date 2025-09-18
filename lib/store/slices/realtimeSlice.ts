@@ -2,23 +2,32 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Bookmark } from "@cosmic-dolphin/api";
 import {
   Task,
+  SubTask,
+  Session,
+  Message,
+  MessagePart,
   ConnectionState,
   ConnectionStatus,
   RealtimeEventPayload,
+  UsagePart,
 } from "@/lib/types/realtime";
 
 interface RealtimeState {
+  sessions: Record<string, Session>;
+  activeSessionID: string | null;
+
   currentBookmark: Bookmark | null;
-  tasks: Task[];
   isLoading: boolean;
+
   connection: ConnectionState;
-  eventQueue: RealtimeEventPayload[];
   lastEventTimestamp: number | null;
 }
 
 const initialState: RealtimeState = {
+  sessions: {},
+  activeSessionID: null,
+
   currentBookmark: null,
-  tasks: [],
   isLoading: false,
   connection: {
     status: "disconnected",
@@ -27,7 +36,6 @@ const initialState: RealtimeState = {
     lastError: null,
     isOnline: typeof navigator !== "undefined" ? navigator.onLine : true,
   },
-  eventQueue: [],
   lastEventTimestamp: null,
 };
 
@@ -66,6 +74,108 @@ const realtimeSlice = createSlice({
       state.connection.lastError = null;
     },
 
+    // Session management
+    createSession: (
+      state,
+      action: PayloadAction<{
+        sessionID: string;
+        refID: string;
+      }>
+    ) => {
+      const { sessionID, refID } = action.payload;
+
+      if (state.sessions[sessionID]) {
+        state.sessions[sessionID].refID = refID;
+        return;
+      } else {
+        state.sessions[sessionID] = {
+          sessionID,
+          refID,
+          tasks: {},
+          eventsReceivedCount: 0,
+          lastReceivedEventTimestamp: Date.now(),
+          usage: {},
+        };
+      }
+      state.activeSessionID = sessionID;
+    },
+
+    setActiveSession: (state, action: PayloadAction<string>) => {
+      state.activeSessionID = action.payload;
+    },
+
+    updateSessionUsage: (
+      state,
+      action: PayloadAction<{
+        sessionID: string;
+        usage: UsagePart;
+      }>
+    ) => {
+      const { sessionID, usage } = action.payload;
+      const session = state.sessions[sessionID];
+      if (session) {
+        session.usage.totalTokens =
+          (session.usage.totalTokens || 0) + (usage.totalTokens || 0);
+        session.usage.inputTokens =
+          (session.usage.inputTokens || 0) + (usage.inputTokens || 0);
+        session.usage.outputTokens =
+          (session.usage.outputTokens || 0) + (usage.outputTokens || 0);
+        session.usage.reasoningTokens =
+          (session.usage.reasoningTokens || 0) + (usage.reasoningTokens || 0);
+        session.usage.cachedInputTokens =
+          (session.usage.cachedInputTokens || 0) +
+          (usage.cachedInputTokens || 0);
+      }
+    },
+
+    setSessionError: (
+      state,
+      action: PayloadAction<{
+        sessionID: string;
+        error: string;
+      }>
+    ) => {
+      const { sessionID, error } = action.payload;
+      const session = state.sessions[sessionID];
+      if (session) {
+        // Store error in session
+        session.error = error;
+      }
+    },
+
+    // TODO replace calls that increment events received with this
+    incrementEventsReceived: (
+      state,
+      action: PayloadAction<{ sessionID: string }>
+    ) => {
+      const { sessionID } = action.payload;
+      const session = state.sessions[sessionID];
+      if (session) {
+        session.eventsReceivedCount += 1;
+        session.lastReceivedEventTimestamp = Date.now();
+      }
+    },
+
+    createMessage: (
+      state,
+      action: PayloadAction<{
+        sessionID: string;
+        messageID: string;
+        taskID: string;
+      }>
+    ) => {
+      const { sessionID, messageID, taskID } = action.payload;
+      const session = state.sessions[sessionID];
+      if (session && session.tasks[taskID]) {
+        session.tasks[taskID].messages[messageID] = {
+          sessionID,
+          messageID,
+          taskID,
+          parts: {},
+        };
+      }
+    },
+
     // Bookmark management
     setCurrentBookmark: (state, action: PayloadAction<Bookmark>) => {
       state.currentBookmark = action.payload;
@@ -94,194 +204,331 @@ const realtimeSlice = createSlice({
       state.isLoading = action.payload;
     },
 
-    // Task management
-    addTask: (
+    // Event-specific handlers
+    handleMessagePartUpdated: (
       state,
-      action: PayloadAction<{ taskID: string; name: string }>
+      action: PayloadAction<{
+        sessionID: string;
+        messageID: string;
+        taskID: string;
+        partID: string;
+        part: MessagePart;
+      }>
+    ) => {
+      const { sessionID, messageID, taskID, partID, part } = action.payload;
+      const session = state.sessions[sessionID];
+      if (session && session.tasks[taskID]) {
+        if (session.tasks[taskID].messages[messageID] === undefined) {
+          realtimeSlice.caseReducers.createMessage(state, {
+            type: "createMessage",
+            payload: {
+              sessionID,
+              messageID,
+              taskID,
+            },
+          });
+        }
+
+        session.tasks[taskID].messages[messageID].parts[partID] = part;
+
+        // Increment events received count
+        session.eventsReceivedCount += 1;
+        session.lastReceivedEventTimestamp = Date.now();
+      }
+    },
+
+    handleMessageUpdated: (
+      state,
+      action: PayloadAction<{
+        sessionID: string;
+        messageID: string;
+        taskID: string;
+        metadata?: Record<string, any>;
+      }>
+    ) => {
+      const { sessionID, messageID, taskID } = action.payload;
+      const session = state.sessions[sessionID];
+      if (
+        session &&
+        session.tasks[taskID] &&
+        session.tasks[taskID].messages[messageID]
+      ) {
+        // Handle message-level updates as needed
+
+        // Increment events received count
+        session.eventsReceivedCount += 1;
+        session.lastReceivedEventTimestamp = Date.now();
+      }
+    },
+
+    handleSessionError: (
+      state,
+      action: PayloadAction<{
+        sessionID: string;
+        error: string;
+        context?: Record<string, any>;
+      }>
+    ) => {
+      const { sessionID, error } = action.payload;
+      const session = state.sessions[sessionID];
+      if (session) {
+        session.error = error;
+
+        // Increment events received count
+        session.eventsReceivedCount += 1;
+        session.lastReceivedEventTimestamp = Date.now();
+      }
+    },
+
+    handleBookmarkUpdated: (state, action: PayloadAction<Bookmark>) => {
+      state.currentBookmark = action.payload;
+      state.lastEventTimestamp = Date.now();
+    },
+
+    handleTaskStarted: (
+      state,
+      action: PayloadAction<{
+        sessionID: string;
+        taskID: string;
+        name: string;
+      }>
     ) => {
       const newTask: Task = {
         taskID: action.payload.taskID,
         name: action.payload.name,
         status: "running",
         subTasks: {},
+        messages: {},
       };
-      state.tasks.push(newTask);
+
+      //check if session exists
+      const session = state.sessions[action.payload.sessionID];
+      if (session) {
+        session.tasks[action.payload.taskID] = newTask;
+      } else {
+        realtimeSlice.caseReducers.createSession(state, {
+          type: "createSession",
+          payload: {
+            sessionID: action.payload.sessionID,
+            refID: "",
+          },
+        });
+        state.sessions[action.payload.sessionID].tasks[action.payload.taskID] =
+          newTask;
+      }
+
       state.lastEventTimestamp = Date.now();
     },
 
-    updateTaskStatus: (
+    handleTaskUpdated: (
       state,
       action: PayloadAction<{
+        sessionID: string;
+        taskID: string;
+        name: string;
+        status: Task["status"];
+        subTasks: Record<string, SubTask>;
+      }>
+    ) => {
+      const session = state.sessions[action.payload.sessionID];
+      if (session) {
+        session.tasks[action.payload.taskID].status = action.payload.status;
+        session.tasks[action.payload.taskID].name = action.payload.name;
+        session.tasks[action.payload.taskID].subTasks = action.payload.subTasks;
+        state.lastEventTimestamp = Date.now();
+      }
+    },
+
+    handleTaskCompleted: (
+      state,
+      action: PayloadAction<{
+        sessionID: string;
+        taskID: string;
+        subTasks: Record<string, SubTask>;
+      }>
+    ) => {
+      const session = state.sessions[action.payload.sessionID];
+      if (session) {
+        session.tasks[action.payload.taskID].status = "completed";
+        session.tasks[action.payload.taskID].subTasks = action.payload.subTasks;
+        state.lastEventTimestamp = Date.now();
+      }
+    },
+
+    handleTaskFailed: (
+      state,
+      action: PayloadAction<{
+        sessionID: string;
         taskID: string;
         status: Task["status"];
-        subTasks?: Record<string, Task>;
+        subTasks: Record<string, SubTask>;
       }>
     ) => {
-      const taskIndex = state.tasks.findIndex(
-        (task) => task.taskID === action.payload.taskID
-      );
-      if (taskIndex !== -1) {
-        state.tasks[taskIndex].status = action.payload.status;
-        if (action.payload.subTasks) {
-          state.tasks[taskIndex].subTasks = action.payload.subTasks;
-        }
+      const session = state.sessions[action.payload.sessionID];
+      if (session) {
+        session.tasks[action.payload.taskID].status = action.payload.status;
+        session.tasks[action.payload.taskID].subTasks = action.payload.subTasks;
         state.lastEventTimestamp = Date.now();
       }
-    },
-
-    updateTaskSubTasks: (
-      state,
-      action: PayloadAction<{
-        taskID: string;
-        subTasks: Record<string, Task>;
-      }>
-    ) => {
-      const taskIndex = state.tasks.findIndex(
-        (task) => task.taskID === action.payload.taskID
-      );
-      if (taskIndex !== -1) {
-        state.tasks[taskIndex].subTasks = action.payload.subTasks;
-        state.lastEventTimestamp = Date.now();
-      }
-    },
-
-    // Event queue management (for offline scenarios)
-    queueEvent: (state, action: PayloadAction<RealtimeEventPayload>) => {
-      state.eventQueue.push(action.payload);
     },
 
     processEvent: (state, action: PayloadAction<RealtimeEventPayload>) => {
       const event = action.payload;
+
       console.log(event.type, event.data);
 
       switch (event.type) {
         case "bookmark.updated":
-          state.isLoading = true;
-          state.currentBookmark = event.data;
-          state.isLoading = false;
+          realtimeSlice.caseReducers.handleBookmarkUpdated(state, {
+            type: "handleBookmarkUpdated",
+            payload: event.data,
+          });
           break;
 
         case "task.started":
-          const newTask: Task = {
-            taskID: event.data.taskID,
-            name: event.data.name,
-            status: "running",
-            subTasks: {},
-          };
-          state.tasks.push(newTask);
+          realtimeSlice.caseReducers.handleTaskStarted(state, {
+            type: "handleTaskStarted",
+            payload: {
+              sessionID: event.data.sessionID,
+              taskID: event.data.taskID,
+              name: event.data.name,
+            },
+          });
           break;
 
         case "task.completed":
-          const completedTaskIndex = state.tasks.findIndex(
-            (task) => task.taskID === event.data.taskID
-          );
-          if (completedTaskIndex !== -1) {
-            state.tasks[completedTaskIndex].status = "completed";
-            state.tasks[completedTaskIndex].subTasks = event.data.subTasks;
-          }
+          realtimeSlice.caseReducers.handleTaskCompleted(state, {
+            type: "handleTaskCompleted",
+            payload: {
+              sessionID: event.data.sessionID,
+              taskID: event.data.taskID,
+              subTasks: event.data.subTasks,
+            },
+          });
           break;
 
         case "task.updated":
-          const updatedTaskIndex = state.tasks.findIndex(
-            (task) => task.taskID === event.data.taskID
-          );
-          if (updatedTaskIndex !== -1) {
-            state.tasks[updatedTaskIndex].subTasks = event.data.subTasks;
-          }
+          realtimeSlice.caseReducers.handleTaskUpdated(state, {
+            type: "handleTaskUpdated",
+            payload: {
+              sessionID: event.data.sessionID,
+              taskID: event.data.taskID,
+              name: event.data.name,
+              status: event.data.status,
+              subTasks: event.data.subTasks,
+            },
+          });
           break;
 
-        case "task.error":
-          const errorTaskIndex = state.tasks.findIndex(
-            (task) => task.taskID === event.data.taskID
-          );
-          if (errorTaskIndex !== -1) {
-            state.tasks[errorTaskIndex].status = "error";
-            state.tasks[errorTaskIndex].subTasks = event.data.subTasks;
-          }
+        case "task.failed":
+          realtimeSlice.caseReducers.handleTaskFailed(state, {
+            type: "handleTaskFailed",
+            payload: {
+              sessionID: event.data.sessionID,
+              taskID: event.data.taskID,
+              subTasks: event.data.subTasks,
+              status: event.data.status,
+            },
+          });
+          break;
+
+        case "session.started":
+          const { sessionID, refID } = event.data;
+          realtimeSlice.caseReducers.createSession(state, {
+            type: "handleSessionStarted",
+            payload: {
+              sessionID,
+              refID,
+            },
+          });
+          break;
+
+        case "session.error":
+          realtimeSlice.caseReducers.handleSessionError(state, {
+            type: "handleSessionError",
+            payload: {
+              sessionID: event.data.sessionID,
+              error: event.data.error,
+              context: event.data.context,
+            },
+          });
+          break;
+
+        case "message.updated":
+          realtimeSlice.caseReducers.handleMessageUpdated(state, {
+            type: "handleMessageUpdated",
+            payload: {
+              sessionID: event.data.sessionID,
+              messageID: event.data.messageID,
+              taskID: event.data.taskID,
+              metadata: event.data.metadata,
+            },
+          });
+          break;
+
+        case "message.part.updated":
+          realtimeSlice.caseReducers.handleMessagePartUpdated(state, {
+            type: "handleMessagePartUpdated",
+            payload: {
+              sessionID: event.data.sessionID,
+              messageID: event.data.messageID,
+              taskID: event.data.taskID,
+              partID: event.data.partID,
+              part: event.data.part,
+            },
+          });
+
+          realtimeSlice.caseReducers.incrementEventsReceived(state, {
+            type: "incrementEventsReceived",
+            payload: {
+              sessionID: event.data.sessionID,
+            },
+          });
           break;
       }
 
       state.lastEventTimestamp = Date.now();
-    },
-
-    processEventQueue: (state) => {
-      // Process queued events when reconnecting
-      state.eventQueue.forEach((event) => {
-        console.log(event.type, event.data);
-        switch (event.type) {
-          case "bookmark.updated":
-            state.currentBookmark = event.data;
-            break;
-          case "task.started":
-            const newTask: Task = {
-              taskID: event.data.taskID,
-              name: event.data.name,
-              status: "running",
-              subTasks: {},
-            };
-            if (!state.tasks.find((t) => t.taskID === event.data.taskID)) {
-              state.tasks.push(newTask);
-            }
-            break;
-          case "task.completed":
-          case "task.error":
-            const taskIndex = state.tasks.findIndex(
-              (t) => t.taskID === event.data.taskID
-            );
-            if (taskIndex !== -1) {
-              state.tasks[taskIndex].status =
-                event.type === "task.completed" ? "completed" : "error";
-              state.tasks[taskIndex].subTasks = event.data.subTasks;
-            }
-            break;
-          case "task.updated":
-            const updateIndex = state.tasks.findIndex(
-              (t) => t.taskID === event.data.taskID
-            );
-            if (updateIndex !== -1) {
-              state.tasks[updateIndex].subTasks = event.data.subTasks;
-            }
-            break;
-        }
-      });
-      state.eventQueue = [];
-      state.lastEventTimestamp = Date.now();
-    },
-
-    clearEventQueue: (state) => {
-      state.eventQueue = [];
-    },
-
-    // Reset state
-    resetRealtimeState: (state) => {
-      state.currentBookmark = null;
-      state.tasks = [];
-      state.isLoading = false;
-      state.eventQueue = [];
-      state.lastEventTimestamp = null;
     },
   },
 });
 
 export const {
+  // Connection management
   setConnectionStatus,
   incrementConnectionAttempts,
   setConnectionError,
   setOnlineStatus,
   resetConnection,
+
+  // Session management
+  createSession,
+  setActiveSession,
+  updateSessionUsage,
+  setSessionError,
+  incrementEventsReceived,
+
+  // Message management
+  createMessage,
+
+  // Event-specific handlers
+  handleMessagePartUpdated,
+  handleMessageUpdated,
+  handleSessionError,
+  handleBookmarkUpdated,
+  handleTaskStarted,
+  handleTaskUpdated,
+  handleTaskCompleted,
+  handleTaskFailed,
+
+  // Backward compatibility
   setCurrentBookmark,
   setCurrentBookmarkFromApi,
   updateBookmark,
   updateBookmarkFromApi,
   setLoadingState,
-  addTask,
-  updateTaskStatus,
-  updateTaskSubTasks,
-  queueEvent,
+
+  // Event queue management
   processEvent,
-  processEventQueue,
-  clearEventQueue,
-  resetRealtimeState,
 } = realtimeSlice.actions;
 
 export default realtimeSlice.reducer;

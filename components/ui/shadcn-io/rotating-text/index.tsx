@@ -16,7 +16,7 @@ type RotatingTextProps = {
   transition?: Transition;
   y?: number;
   containerClassName?: string;
-} & HTMLMotionProps<"div">;
+} & Omit<HTMLMotionProps<"div">, "transition" | "ref">;
 
 function RotatingText({
   text,

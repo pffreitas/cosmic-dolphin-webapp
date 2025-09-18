@@ -2,35 +2,17 @@
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import {
-  Activity,
-  LayoutDashboard,
-  MessageSquareText,
-  SearchIcon,
-  BrainIcon,
-} from "lucide-react";
-import {
-  ChainOfThought,
-  ChainOfThoughtContent,
-  ChainOfThoughtHeader,
-  ChainOfThoughtStep,
-  ChainOfThoughtSearchResults,
-  ChainOfThoughtSearchResult,
-} from "../ai-elements/chain-of-thought";
-import { useSelector } from "react-redux";
-import { RootState } from "@/lib/store";
+import { MessageSquareText } from "lucide-react";
+import {} from "../ai-elements/chain-of-thought";
+import { useActiveSession } from "@/lib/store/realtimeSelectors";
 
 export function AppSidebar() {
-  const events = useSelector((state: RootState) => state.realtime.eventQueue);
+  const activeSession = useActiveSession();
   return (
     <Sidebar side="right" variant="floating" collapsible="offcanvas">
       <SidebarHeader>
@@ -49,9 +31,7 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent className="p-4">
-        {events.map((event, index) => (
-          <pre key={`event-${index}`}>{JSON.stringify(event, null, 2)}</pre>
-        ))}
+        <pre>{JSON.stringify(activeSession, null, 2)}</pre>
       </SidebarContent>
     </Sidebar>
   );

@@ -9,11 +9,7 @@ export const store = configureStore({
     realtime: realtimeReducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({
-      serializableCheck: {
-        ignoredActions: ["realtime/queueEvent"],
-      },
-    }).concat(createSupabaseMiddleware()),
+    getDefaultMiddleware({}).concat(createSupabaseMiddleware()),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
