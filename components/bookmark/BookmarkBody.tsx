@@ -14,21 +14,17 @@ import {
   TaskTrigger,
 } from "../ai-elements/task";
 import { Card, CardContent } from "../ui/card";
-import { Button } from "../ui/button";
 import { RefreshCcwIcon, ShareIcon, ThumbsUpIcon } from "lucide-react";
 import { Action, Actions } from "../ai-elements/actions";
 import { Separator } from "../ui/separator";
-import {
-  useActiveSession,
-  useSessionByBookmark,
-} from "@/lib/store/realtimeSelectors";
+import { useSessionByBookmark } from "@/lib/store/realtimeSelectors";
 
 export const BookmarkBody = (props: { bookmark: Bookmark }) => {
   const dispatch = useAppDispatch();
   const { currentBookmark } = useAppSelector((state) => state.realtime);
 
   const activeSession = useSessionByBookmark(props.bookmark.id);
-  console.log("activeSession", activeSession);
+  console.log("session for bookmark", activeSession);
 
   useEffect(() => {
     if (
@@ -45,15 +41,16 @@ export const BookmarkBody = (props: { bookmark: Bookmark }) => {
     <div className="flex flex-col gap-8">
       <ConnectionStatus />
 
-      <Card>
-        <CardContent className="px-5 py-2">
-          <div className="flex flex-row gap-6 h-8 items-stretch">
-            <div className="w-[180px] flex">
-              <CosmicLoading />
-            </div>
-            <Separator orientation="vertical" className="w-px" />
-            <div className="flex-1 flex align-center">
-              {/* {lastestRunningTask && (
+      {activeSession?.isLoading && (
+        <Card>
+          <CardContent className="px-5 py-2">
+            <div className="flex flex-row gap-6 h-8 items-stretch">
+              <div className="w-[180px] flex">
+                <CosmicLoading />
+              </div>
+              <Separator orientation="vertical" className="w-px" />
+              <div className="flex-1 flex align-center">
+                {/* {lastestRunningTask && (
                 <TaskComponent
                   key={lastestRunningTask.taskID}
                   className="w-full"
@@ -66,10 +63,11 @@ export const BookmarkBody = (props: { bookmark: Bookmark }) => {
                   <TaskContent></TaskContent>
                 </TaskComponent>
               )} */}
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {bookmark.metadata?.openGraph && (
         <OpenGraphWebpage
