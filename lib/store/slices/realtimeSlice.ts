@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
 import { Bookmark } from "@cosmic-dolphin/api";
 import {
   Task,
@@ -91,6 +91,7 @@ const realtimeSlice = createSlice({
           eventCount: 0,
           lastEventTimestamp: Date.now(),
           usage: {},
+          isLoading: true,
         };
       }
       state.activeSessionID = sessionID;
@@ -139,6 +140,20 @@ const realtimeSlice = createSlice({
       }
     },
 
+    setSessionLoading: (
+      state,
+      action: PayloadAction<{
+        sessionID: string;
+        isLoading: boolean;
+      }>
+    ) => {
+      const { sessionID, isLoading } = action.payload;
+      const session = state.sessions[sessionID];
+      if (session) {
+        session.isLoading = isLoading;
+      }
+    },
+
     // TODO replace calls that increment events received with this
     incrementEventsReceived: (
       state,
@@ -149,6 +164,8 @@ const realtimeSlice = createSlice({
       if (session) {
         session.eventCount += 1;
         session.lastEventTimestamp = Date.now();
+        // Keep loading true when events are being received
+        session.isLoading = true;
       }
     },
 
@@ -178,7 +195,6 @@ const realtimeSlice = createSlice({
     },
 
     setCurrentBookmarkFromApi: (state, action: PayloadAction<Bookmark>) => {
-      console.log("setCurrentBookmarkFromApi", action.payload);
       state.currentBookmark = action.payload;
     },
 
@@ -286,8 +302,9 @@ const realtimeSlice = createSlice({
             refID: "",
           },
         });
-        state.sessions[action.payload.sessionID].tasks[action.payload.taskID] =
-          newTask;
+        const createdSession = state.sessions[action.payload.sessionID];
+        createdSession.tasks[action.payload.taskID] = newTask;
+        createdSession.isLoading = true;
       }
     },
 
@@ -342,8 +359,6 @@ const realtimeSlice = createSlice({
 
     processEvent: (state, action: PayloadAction<RealtimeEventPayload>) => {
       const event = action.payload;
-
-      console.log(event.type, event.data);
 
       if ("sessionID" in event.data) {
         realtimeSlice.caseReducers.incrementEventsReceived(state, {
@@ -467,6 +482,30 @@ const realtimeSlice = createSlice({
   },
 });
 
+// Session timeout monitoring thunk
+export const checkSessionTimeouts = createAsyncThunk(
+  "realtime/checkSessionTimeouts",
+  async (_, { getState, dispatch }) => {
+    const state = getState() as { realtime: RealtimeState };
+    const currentTime = Date.now();
+    const timeoutThreshold = 30000; // 30 seconds
+
+    Object.values(state.realtime.sessions).forEach((session) => {
+      if (
+        session.isLoading &&
+        currentTime - session.lastEventTimestamp > timeoutThreshold
+      ) {
+        dispatch(
+          realtimeSlice.actions.setSessionLoading({
+            sessionID: session.sessionID,
+            isLoading: false,
+          })
+        );
+      }
+    });
+  }
+);
+
 export const {
   // Connection management
   setConnectionStatus,
@@ -480,6 +519,7 @@ export const {
   setActiveSession,
   updateSessionUsage,
   setSessionError,
+  setSessionLoading,
   incrementEventsReceived,
 
   // Message management

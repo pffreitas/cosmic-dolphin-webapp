@@ -29,6 +29,7 @@ export interface Session {
   lastEventTimestamp: number;
   usage: UsagePart;
   error?: string;
+  isLoading: boolean;
 }
 
 export interface Message {

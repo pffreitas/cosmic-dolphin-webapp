@@ -17,7 +17,7 @@ export const selectSessionByID = createSelector(
 export const selectSessionByBookmark = createSelector(
   [selectSessions, (state: RootState, refId: string) => refId],
   (sessions, refId) => {
-    return Object.values(sessions).find(session => session.refId === refId) || null;
+    return Object.values(sessions).find(session => session.refID === refId) || null;
   }
 );
 
@@ -62,14 +62,14 @@ export const selectMessageParts = createSelector(
 export const selectTextParts = createSelector(
   [selectMessageParts],
   (parts) => {
-    return Object.values(parts).filter((part): part is TextPart => part.type === "text");
+    return Object.values(parts).filter((part): part is TextPart => 'type' in part && part.type === "text");
   }
 );
 
 export const selectToolParts = createSelector(
   [selectMessageParts],
   (parts) => {
-    return Object.values(parts).filter((part): part is ToolPart => part.type === "tool");
+    return Object.values(parts).filter((part): part is ToolPart => 'type' in part && part.type === "tool");
   }
 );
 
@@ -110,7 +110,7 @@ export const useActiveSession = () => {
 export const useToolParts = (sessionID: string, messageID: string, status?: ToolPart["status"]) => {
   return useAppSelector(state => {
     const parts = selectMessageParts(state, sessionID, messageID);
-    const toolParts = Object.values(parts).filter((part): part is ToolPart => part.type === "tool");
+    const toolParts = Object.values(parts).filter((part): part is ToolPart => 'type' in part && part.type === "tool");
     return status ? toolParts.filter(part => part.status === status) : toolParts;
   });
 };
@@ -118,7 +118,7 @@ export const useToolParts = (sessionID: string, messageID: string, status?: Tool
 export const useTextParts = (sessionID: string, messageID: string) => {
   return useAppSelector(state => {
     const parts = selectMessageParts(state, sessionID, messageID);
-    return Object.values(parts).filter((part): part is TextPart => part.type === "text");
+    return Object.values(parts).filter((part): part is TextPart => 'type' in part && part.type === "text");
   });
 };
 

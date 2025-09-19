@@ -7,6 +7,7 @@ import {
   setOnlineStatus,
   resetConnection,
   processEvent,
+  checkSessionTimeouts,
 } from "../slices/realtimeSlice";
 import { RealtimeEventPayload } from "@/lib/types/realtime";
 import { RootState } from "../index";
@@ -15,11 +16,13 @@ class SupabaseRealtimeManager {
   private channel: RealtimeChannel | null = null;
   private reconnectTimer: NodeJS.Timeout | null = null;
   private connectionTimeout: NodeJS.Timeout | null = null;
+  private sessionTimeoutTimer: NodeJS.Timeout | null = null;
   private dispatch: any;
   private getState: () => RootState;
   private supabase: ReturnType<typeof createClient>;
   private isDestroyed = false;
   private maxAttempts = 3;
+  private sessionTimeoutInterval = 10000; // Check every 10 seconds
 
   constructor(dispatch: any, getState: () => RootState) {
     this.dispatch = dispatch;
@@ -34,6 +37,9 @@ class SupabaseRealtimeManager {
       window.addEventListener("online", this.handleOnline);
       window.addEventListener("offline", this.handleOffline);
     }
+
+    // Start session timeout monitoring
+    this.startSessionTimeoutMonitoring();
   }
 
   private handleOnline = () => {
@@ -68,8 +74,8 @@ class SupabaseRealtimeManager {
     this.dispatch(setConnectionStatus("reconnecting"));
     this.dispatch(incrementConnectionAttempts());
 
-    // Clear existing timers
-    this.clearTimers();
+    // Clear existing connection timers (but keep session timeout timer)
+    this.clearConnectionTimers();
 
     try {
       // Create new channel
@@ -158,9 +164,10 @@ class SupabaseRealtimeManager {
     }, delay);
   };
 
-  private clearTimers = () => {
+  private clearConnectionTimers = () => {
     this.clearConnectionTimeout();
     this.clearReconnectTimer();
+    // Note: NOT clearing session timeout timer
   };
 
   private clearConnectionTimeout = () => {
@@ -177,8 +184,25 @@ class SupabaseRealtimeManager {
     }
   };
 
+  private startSessionTimeoutMonitoring = () => {
+    if (this.isDestroyed) return;
+
+    this.sessionTimeoutTimer = setInterval(() => {
+      if (!this.isDestroyed) {
+        this.dispatch(checkSessionTimeouts());
+      }
+    }, this.sessionTimeoutInterval);
+  };
+
+  private clearSessionTimeoutTimer = () => {
+    if (this.sessionTimeoutTimer) {
+      clearInterval(this.sessionTimeoutTimer);
+      this.sessionTimeoutTimer = null;
+    }
+  };
+
   public disconnect = () => {
-    this.clearTimers();
+    this.clearConnectionTimers();
 
     if (this.channel) {
       this.channel.unsubscribe();
@@ -193,6 +217,7 @@ class SupabaseRealtimeManager {
   public destroy = () => {
     this.isDestroyed = true;
     this.disconnect();
+    this.clearSessionTimeoutTimer();
 
     // Remove event listeners
     if (typeof window !== "undefined") {
