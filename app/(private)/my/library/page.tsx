@@ -13,7 +13,7 @@ const NoteCard = ({ bookmark }: { bookmark: Bookmark }) => {
           </div>
         </div>
         <div className="break-word mt-two line-clamp-2 text-balance light font-sans text-sm text-textOff dark:text-textOffDark selection:bg-super/50 selection:text-textMain dark:selection:bg-superDuper/10 dark:selection:text-superDark">
-          {bookmark.summary}
+          {bookmark.cosmicSummary}
         </div>
       </div>
     </Link>
