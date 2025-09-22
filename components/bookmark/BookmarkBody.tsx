@@ -7,17 +7,12 @@ import CosmicMarkdown from "../markdown/CosmicMarkdown";
 import OpenGraphWebpage from "../opengraph/OpenGraphWebpage";
 import CosmicLoading from "../loading/CosmicLoading";
 import { ConnectionStatus } from "../realtime/ConnectionStatus";
-import {
-  Task as TaskComponent,
-  TaskContent,
-  TaskItem,
-  TaskTrigger,
-} from "../ai-elements/task";
 import { Card, CardContent } from "../ui/card";
 import { RefreshCcwIcon, ShareIcon, ThumbsUpIcon } from "lucide-react";
 import { Action, Actions } from "../ai-elements/actions";
 import { Separator } from "../ui/separator";
 import { useSessionByBookmark } from "@/lib/store/realtimeSelectors";
+import { Badge } from "../ui/badge";
 
 export const BookmarkBody = (props: { bookmark: Bookmark }) => {
   const dispatch = useAppDispatch();
@@ -49,21 +44,7 @@ export const BookmarkBody = (props: { bookmark: Bookmark }) => {
                 <CosmicLoading />
               </div>
               <Separator orientation="vertical" className="w-px" />
-              <div className="flex-1 flex align-center">
-                {/* {lastestRunningTask && (
-                <TaskComponent
-                  key={lastestRunningTask.taskID}
-                  className="w-full"
-                  open={lastestRunningTask.status === "running"}
-                >
-                  <TaskTrigger
-                    title={lastestRunningTask.name}
-                    status="running"
-                  />
-                  <TaskContent></TaskContent>
-                </TaskComponent>
-              )} */}
-              </div>
+              <div className="flex-1 flex align-center"></div>
             </div>
           </CardContent>
         </Card>
@@ -78,7 +59,19 @@ export const BookmarkBody = (props: { bookmark: Bookmark }) => {
         />
       )}
 
-      {bookmark.summary && <CosmicMarkdown body={bookmark.summary} />}
+      {bookmark.cosmicTags && (
+        <div className="flex flex-row gap-2">
+          {bookmark.cosmicTags.map((tag) => (
+            <Badge key={tag} variant="outline">
+              {tag}
+            </Badge>
+          ))}
+        </div>
+      )}
+
+      {bookmark.cosmicSummary && (
+        <CosmicMarkdown body={bookmark.cosmicSummary} />
+      )}
       <div className="flex">
         <Actions>
           <Action label="Like">
