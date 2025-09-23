@@ -1,4 +1,4 @@
-name: Next.js CI/CD
+name: Cosmic Dolphin Webapp CI/CD
 
 on:
   push:
@@ -8,11 +8,9 @@ on:
 
 env:
   NODE_VERSION: "18"
-  REGISTRY_NAME: ${{ secrets.DIGITALOCEAN_REGISTRY_NAME }}
-  IMAGE_NAME: cosmic-dolphin-webapp
 
 jobs:
-  test:
+  ci:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -35,78 +33,3 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         run: npm run build
-
-  build-and-deploy:
-    needs: [test]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build application
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-        run: npm run build
-
-      - name: Install doctl
-        uses: digitalocean/action-doctl@v2
-        with:
-          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
-
-      - name: Log in to DigitalOcean Container Registry
-        run: doctl registry login
-
-      - name: Build Docker image
-        run: |
-          docker build \
-            --build-arg NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }} \
-            --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }} \
-            -t $IMAGE_NAME .
-
-      - name: Tag Docker image
-        run: |
-          docker tag $IMAGE_NAME registry.digitalocean.com/$REGISTRY_NAME/$IMAGE_NAME:$GITHUB_SHA
-          docker tag $IMAGE_NAME registry.digitalocean.com/$REGISTRY_NAME/$IMAGE_NAME:latest
-
-      - name: Push Docker image
-        run: |
-          docker push registry.digitalocean.com/$REGISTRY_NAME/$IMAGE_NAME:$GITHUB_SHA
-          docker push registry.digitalocean.com/$REGISTRY_NAME/$IMAGE_NAME:latest
-
-      - name: Deploy to DigitalOcean App Platform
-        run: |
-          # Update your app with the new image
-          doctl apps update ${{ secrets.DIGITALOCEAN_APP_ID }} --spec - <<EOF
-          name: cosmic-dolphin-webapp
-          services:
-          - name: web
-            source_dir: /
-            github:
-              repo: ${{ github.repository }}
-              branch: main
-            run_command: npm start
-            environment_slug: node-js
-            instance_count: 1
-            instance_size_slug: basic-xxs
-            http_port: 3000
-            health_check:
-              http_path: /
-            envs:
-            - key: NEXT_PUBLIC_SUPABASE_URL
-              value: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-            - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
-              value: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-            - key: NODE_ENV
-              value: production
-          EOF
