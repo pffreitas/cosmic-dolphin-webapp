@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/store/hooks";
 import { setCurrentBookmarkFromApi } from "@/lib/store/slices/realtimeSlice";
-import { Bookmark } from "@cosmic-dolphin/api";
+import { Bookmark, ResourceType } from "@cosmic-dolphin/api";
 import CosmicMarkdown from "../markdown/CosmicMarkdown";
 import OpenGraphWebpage from "../opengraph/OpenGraphWebpage";
 import CosmicLoading from "../loading/CosmicLoading";
@@ -13,6 +13,14 @@ import { Action, Actions } from "../ai-elements/actions";
 import { Separator } from "../ui/separator";
 import { useSessionByBookmark } from "@/lib/store/realtimeSelectors";
 import { Badge } from "../ui/badge";
+import {
+  Carousel,
+  CarouselItem,
+  CarouselNext,
+  CarouselContent,
+  CarouselPrevious,
+} from "../ui/carousel";
+import OpenGraphImage from "../notes/OpenGraphImage";
 
 export const BookmarkBody = (props: { bookmark: Bookmark }) => {
   const dispatch = useAppDispatch();
@@ -71,6 +79,27 @@ export const BookmarkBody = (props: { bookmark: Bookmark }) => {
 
       {bookmark.cosmicSummary && (
         <CosmicMarkdown body={bookmark.cosmicSummary} />
+      )}
+
+      {bookmark.cosmicImages && (
+        <div>
+          <Carousel className="w-full">
+            <CarouselContent>
+              {bookmark.cosmicImages.map((image, index) => (
+                <CarouselItem key={index}>
+                  <div className="p-1">
+                    <OpenGraphImage
+                      imageUrl={image.url}
+                      description={image.description}
+                    />
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
+        </div>
       )}
       <div className="flex">
         <Actions>
