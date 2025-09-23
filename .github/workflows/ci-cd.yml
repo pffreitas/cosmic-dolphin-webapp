@@ -36,27 +36,8 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         run: npm run build
 
-  supabase-migrations:
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Supabase CLI
-        uses: supabase/setup-cli@v1
-        with:
-          version: latest
-
-      - name: Run Supabase migrations
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: |
-          supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
-          supabase db push
-
   build-and-deploy:
-    needs: [test, supabase-migrations]
+    needs: [test]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
