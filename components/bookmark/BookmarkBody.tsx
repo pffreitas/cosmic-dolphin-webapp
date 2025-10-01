@@ -91,13 +91,14 @@ export const BookmarkBody = (props: { bookmark: Bookmark }) => {
 
       {bookmark.cosmicImages && (
         <div>
-          <Carousel className="w-full">
+          <Carousel className="w-[80%] mx-auto">
             <CarouselContent>
               {bookmark.cosmicImages.map((image, index) => (
                 <CarouselItem key={index}>
                   <div className="p-1">
                     <OpenGraphImage
                       imageUrl={image.url}
+                      title={image.title}
                       description={image.description}
                       onClick={() => setIsImageGaleryDialogOpen(true)}
                     />
@@ -125,14 +126,14 @@ export const BookmarkBody = (props: { bookmark: Bookmark }) => {
                         <div className="h-full flex flex-col items-center p-1 gap-4 ">
                           <img
                             src={image.url}
-                            alt={image.description}
-                            className="flex-1 w-full max-h-[60vh] object-contain"
+                            alt={image.title}
+                            className="flex-1 w-full max-h-[80vh] object-contain"
                           />
 
                           <div className="mt-auto flex flex-col gap-1">
-                            {image.description && (
+                            {image.title && (
                               <h4 className="text-sm font-medium text-gray-900 mb-1">
-                                Title
+                                {image.title}
                               </h4>
                             )}
                             {image.description && (

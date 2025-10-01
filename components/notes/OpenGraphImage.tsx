@@ -1,11 +1,13 @@
 interface OpenGraphImageProps {
   imageUrl: string;
+  title: string;
   description: string;
   onClick?: () => void;
 }
 
 export default function OpenGraphImage({
   imageUrl,
+  title,
   description,
   onClick,
 }: OpenGraphImageProps) {
@@ -24,12 +26,10 @@ export default function OpenGraphImage({
         />
       </div>
       <div className="flex flex-col gap-1" style={{ flex: "1" }}>
-        {description && (
-          <h4 className="text-sm font-medium text-gray-900 mb-1">Title</h4>
+        {title && (
+          <h4 className="text-sm font-medium text-gray-900 mb-1">{title}</h4>
         )}
-        {description && (
-          <p className="text-xs text-gray-600 line-clamp-2">{description}</p>
-        )}
+        {description && <p className="text-xs text-gray-600">{description}</p>}
       </div>
     </div>
   );
