@@ -24,6 +24,14 @@ export default async function RootLayout({
   return (
     <html lang="en" className={GeistSans.className} suppressHydrationWarning>
       <head>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"
+        />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="theme-color" content="#ffffff" />
         <script
           async
           src="https://www.googletagmanager.com/gtag/js?id=G-Z7RBS9TF0F"
@@ -110,7 +118,7 @@ export default async function RootLayout({
                 {/* Mobile Layout */}
                 <main className="md:hidden flex flex-col min-h-screen">
                   {/* Content area with padding for fixed header and bottom nav */}
-                  <div className="flex-1 pt-20 pb-24 px-4">
+                  <div className="flex-1 pt-20 pb-28 px-4">
                     <div className="max-w-screen-sm mx-auto">{children}</div>
                   </div>
                 </main>
