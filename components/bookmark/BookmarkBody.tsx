@@ -2,32 +2,31 @@
 import { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/store/hooks";
 import { setCurrentBookmarkFromApi } from "@/lib/store/slices/realtimeSlice";
-import { Bookmark, ResourceType } from "@cosmic-dolphin/api";
-import CosmicMarkdown from "../markdown/CosmicMarkdown";
-import OpenGraphWebpage from "../opengraph/OpenGraphWebpage";
-import CosmicLoading from "../loading/CosmicLoading";
-import { ConnectionStatus } from "../realtime/ConnectionStatus";
-import { Card, CardContent } from "../ui/card";
+import { Bookmark } from "@cosmic-dolphin/api";
+import CosmicMarkdown from "@/components/markdown/CosmicMarkdown";
+import OpenGraphWebpage from "@/components/opengraph/OpenGraphWebpage";
+import CosmicLoading from "@/components/loading/CosmicLoading";
+import { ConnectionStatus } from "@/components/realtime/ConnectionStatus";
+import { Card, CardContent } from "@/components/ui/card";
 import { RefreshCcwIcon, ShareIcon, ThumbsUpIcon } from "lucide-react";
-import { Action, Actions } from "../ai-elements/actions";
-import { Separator } from "../ui/separator";
+import { Action, Actions } from "@/components/ai-elements/actions";
+import { Separator } from "@/components/ui/separator";
 import { useSessionByBookmark } from "@/lib/store/realtimeSelectors";
-import { Badge } from "../ui/badge";
+import { Badge } from "@/components/ui/badge";
 import {
   Carousel,
   CarouselItem,
   CarouselNext,
   CarouselContent,
   CarouselPrevious,
-} from "../ui/carousel";
-import OpenGraphImage from "../notes/OpenGraphImage";
+} from "@/components/ui/carousel";
+import OpenGraphImage from "@/components/opengraph/OpenGraphImage";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
+} from "@/components/ui/dialog";
 
 export const BookmarkBody = (props: { bookmark: Bookmark }) => {
   const dispatch = useAppDispatch();
@@ -95,14 +94,12 @@ export const BookmarkBody = (props: { bookmark: Bookmark }) => {
             <CarouselContent className="-ml-1">
               {bookmark.cosmicImages.map((image, index) => (
                 <CarouselItem key={index} className="pl-1 basis-full">
-                  <div className="p-1">
-                    <OpenGraphImage
-                      imageUrl={image.url}
-                      title={image.title}
-                      description={image.description}
-                      onClick={() => setIsImageGaleryDialogOpen(true)}
-                    />
-                  </div>
+                  <OpenGraphImage
+                    imageUrl={image.url}
+                    title={image.title}
+                    description={image.description}
+                    onClick={() => setIsImageGaleryDialogOpen(true)}
+                  />
                 </CarouselItem>
               ))}
             </CarouselContent>
