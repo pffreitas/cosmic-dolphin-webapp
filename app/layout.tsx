@@ -13,6 +13,8 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/ai-elements/app-sidebar";
+import { MobileHeader } from "@/components/mobile/mobile-header";
+import { BottomNavigation } from "@/components/mobile/bottom-nav";
 
 export default async function RootLayout({
   children,
@@ -57,7 +59,11 @@ export default async function RootLayout({
               disableTransitionOnChange
             >
               <SidebarProvider>
-                <main className="flex w-full h-full p-2">
+                {/* Mobile Header */}
+                <MobileHeader />
+
+                {/* Desktop Layout */}
+                <main className="hidden md:flex w-full h-full p-2">
                   <div className="w-full mx-auto flex flex-col gap-6">
                     <div className="flex gap-6">
                       <div className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-3">
@@ -100,39 +106,17 @@ export default async function RootLayout({
                   </div>
                   <AppSidebar />
                 </main>
-                {/* <main className="w-full mx-auto flex min-h-screen gap-6 flex-col">
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mt-4 p-3">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex-1 flex">
-                        <Link href="/" className="flex gap-2 items-center">
-                          <div className="text-2xl">🐬</div>
-                          <div
-                            className={`transition-all duration-300 ease-in-out overflow-hidden ${"w-auto opacity-100"}`}
-                          >
-                            <h2 className="font-noto text-lg font-normal text-gray-800 whitespace-nowrap">
-                              Cosmic Dolphin
-                            </h2>
-                          </div>
-                        </Link>
-                        <CosmicMenu />
-                      </div>
-                      <div className="flex-1 flex justify-end">
-                        <div className="flex items-center space-x-2">
-                          <NewNoteButton />
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <HeaderAuth />
-                      </div>
-                    </div>
-                  </div>
 
-                  <div className="flex-1 p-6 bg-gray-50">
-                    <SidebarTrigger />
-                    <div className="h-full">{children}</div>
+                {/* Mobile Layout */}
+                <main className="md:hidden flex flex-col min-h-screen">
+                  {/* Content area with padding for fixed header and bottom nav */}
+                  <div className="flex-1 pt-20 pb-24 px-4">
+                    <div className="max-w-screen-sm mx-auto">{children}</div>
                   </div>
-                  <AppSidebar />
-                </main> */}
+                </main>
+
+                {/* Mobile Bottom Navigation */}
+                <BottomNavigation />
               </SidebarProvider>
             </ThemeProvider>
           </Body>

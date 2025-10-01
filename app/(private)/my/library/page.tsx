@@ -23,6 +23,7 @@ const NoteCard = ({ bookmark }: { bookmark: Bookmark }) => {
 async function BookmarksList() {
   const bookmarks = await BookmarksAPI.list();
 
+  console.log(bookmarks);
   return (
     <div className="flex gap-2 flex-col">
       {bookmarks?.map((bookmark: Bookmark) => (

@@ -76,7 +76,7 @@ export const BookmarkBody = (props: { bookmark: Bookmark }) => {
       )}
 
       {bookmark.cosmicTags && (
-        <div className="flex flex-row gap-2">
+        <div className="flex flex-row flex-wrap gap-2">
           {bookmark.cosmicTags.map((tag) => (
             <Badge key={tag} variant="outline">
               {tag}
@@ -89,7 +89,7 @@ export const BookmarkBody = (props: { bookmark: Bookmark }) => {
         <CosmicMarkdown body={bookmark.cosmicSummary} />
       )}
 
-      {bookmark.cosmicImages && (
+      {false && (
         <div>
           <Carousel className="w-[80%] mx-auto">
             <CarouselContent>
