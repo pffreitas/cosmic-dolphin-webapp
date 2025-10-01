@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/store/hooks";
 import { setCurrentBookmarkFromApi } from "@/lib/store/slices/realtimeSlice";
 import { Bookmark, ResourceType } from "@cosmic-dolphin/api";
@@ -21,10 +21,18 @@ import {
   CarouselPrevious,
 } from "../ui/carousel";
 import OpenGraphImage from "../notes/OpenGraphImage";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
 
 export const BookmarkBody = (props: { bookmark: Bookmark }) => {
   const dispatch = useAppDispatch();
   const { currentBookmark } = useAppSelector((state) => state.realtime);
+  const [isImageGaleryDialogOpen, setIsImageGaleryDialogOpen] = useState(false);
 
   const activeSession = useSessionByBookmark(props.bookmark.id);
   console.log("session for bookmark", activeSession);
@@ -91,6 +99,7 @@ export const BookmarkBody = (props: { bookmark: Bookmark }) => {
                     <OpenGraphImage
                       imageUrl={image.url}
                       description={image.description}
+                      onClick={() => setIsImageGaleryDialogOpen(true)}
                     />
                   </div>
                 </CarouselItem>
@@ -99,6 +108,49 @@ export const BookmarkBody = (props: { bookmark: Bookmark }) => {
             <CarouselPrevious />
             <CarouselNext />
           </Carousel>
+
+          <Dialog
+            open={isImageGaleryDialogOpen}
+            onOpenChange={setIsImageGaleryDialogOpen}
+          >
+            <DialogContent className="max-w-4xl">
+              <DialogHeader>
+                <DialogTitle>Image Gallery</DialogTitle>
+              </DialogHeader>
+              <div className="relative flex justify-center">
+                <Carousel className="w-full max-w-3xl">
+                  <CarouselContent>
+                    {bookmark.cosmicImages.map((image, index) => (
+                      <CarouselItem key={index}>
+                        <div className="h-full flex flex-col items-center p-1 gap-4 ">
+                          <img
+                            src={image.url}
+                            alt={image.description}
+                            className="flex-1 w-full max-h-[60vh] object-contain"
+                          />
+
+                          <div className="mt-auto flex flex-col gap-1">
+                            {image.description && (
+                              <h4 className="text-sm font-medium text-gray-900 mb-1">
+                                Title
+                              </h4>
+                            )}
+                            {image.description && (
+                              <p className="text-xs text-gray-600 line-clamp-2">
+                                {image.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious />
+                  <CarouselNext />
+                </Carousel>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       )}
       <div className="flex">
