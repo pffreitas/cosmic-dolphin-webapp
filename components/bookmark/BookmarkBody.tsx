@@ -89,12 +89,12 @@ export const BookmarkBody = (props: { bookmark: Bookmark }) => {
         <CosmicMarkdown body={bookmark.cosmicSummary} />
       )}
 
-      {false && (
-        <div>
-          <Carousel className="w-[80%] mx-auto">
-            <CarouselContent>
+      {bookmark.cosmicImages && (
+        <div className="w-full">
+          <Carousel className="w-full max-w-full">
+            <CarouselContent className="-ml-1">
               {bookmark.cosmicImages.map((image, index) => (
-                <CarouselItem key={index}>
+                <CarouselItem key={index} className="pl-1 basis-full">
                   <div className="p-1">
                     <OpenGraphImage
                       imageUrl={image.url}
@@ -106,38 +106,38 @@ export const BookmarkBody = (props: { bookmark: Bookmark }) => {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
+            <CarouselPrevious className="hidden sm:flex" />
+            <CarouselNext className="hidden sm:flex" />
           </Carousel>
 
           <Dialog
             open={isImageGaleryDialogOpen}
             onOpenChange={setIsImageGaleryDialogOpen}
           >
-            <DialogContent className="max-w-4xl">
+            <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-hidden">
               <DialogHeader>
                 <DialogTitle>Image Gallery</DialogTitle>
               </DialogHeader>
-              <div className="relative flex justify-center">
+              <div className="relative flex justify-center overflow-hidden">
                 <Carousel className="w-full max-w-3xl">
                   <CarouselContent>
                     {bookmark.cosmicImages.map((image, index) => (
                       <CarouselItem key={index}>
-                        <div className="h-full flex flex-col items-center p-1 gap-4 ">
+                        <div className="h-full flex flex-col items-center p-1 gap-2 sm:gap-4">
                           <img
                             src={image.url}
                             alt={image.title}
-                            className="flex-1 w-full max-h-[80vh] object-contain"
+                            className="flex-1 w-full max-h-[60vh] sm:max-h-[70vh] object-contain"
                           />
 
-                          <div className="mt-auto flex flex-col gap-1">
+                          <div className="mt-auto flex flex-col gap-1 px-2">
                             {image.title && (
-                              <h4 className="text-sm font-medium text-gray-900 mb-1">
+                              <h4 className="text-sm font-medium text-gray-900 mb-1 text-center">
                                 {image.title}
                               </h4>
                             )}
                             {image.description && (
-                              <p className="text-xs text-gray-600 line-clamp-2">
+                              <p className="text-xs text-gray-600 line-clamp-2 text-center">
                                 {image.description}
                               </p>
                             )}
@@ -146,8 +146,8 @@ export const BookmarkBody = (props: { bookmark: Bookmark }) => {
                       </CarouselItem>
                     ))}
                   </CarouselContent>
-                  <CarouselPrevious />
-                  <CarouselNext />
+                  <CarouselPrevious className="hidden sm:flex" />
+                  <CarouselNext className="hidden sm:flex" />
                 </Carousel>
               </div>
             </DialogContent>
