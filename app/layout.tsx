@@ -7,12 +7,6 @@ import ReduxProvider from "@/components/providers/redux-provider";
 import Link from "next/link";
 import { CosmicMenu } from "@/components/cosmic-menu";
 import NewNoteButton from "@/components/sidebar/new-note";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/ai-elements/app-sidebar";
 import { MobileHeader } from "@/components/mobile/mobile-header";
 import { BottomNavigation } from "@/components/mobile/bottom-nav";
 
@@ -66,66 +60,56 @@ export default async function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
-              <SidebarProvider>
-                {/* Mobile Header */}
-                <MobileHeader />
+              {/* Mobile Header */}
+              <MobileHeader />
 
-                {/* Desktop Layout */}
-                <main className="hidden md:flex w-full h-full p-2">
-                  <div className="w-full mx-auto flex flex-col gap-6">
-                    <div className="flex gap-6">
-                      <div className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-3">
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="flex-1 flex">
-                            <Link href="/" className="flex gap-2 items-center">
-                              <div className="text-2xl">🐬</div>
-                              <div
-                                className={`transition-all duration-300 ease-in-out overflow-hidden ${"w-auto opacity-100"}`}
-                              >
-                                <h2 className="font-noto text-lg font-normal text-gray-800 whitespace-nowrap">
-                                  Cosmic Dolphin
-                                </h2>
-                              </div>
-                            </Link>
-                            <CosmicMenu />
-                          </div>
-                          <div className="flex-1 flex justify-end">
-                            <div className="flex items-center space-x-2">
-                              <NewNoteButton />
+              {/* Desktop Layout */}
+              <main className="hidden md:flex w-full h-full p-2">
+                <div className="w-full mx-auto flex flex-col gap-6">
+                  <div className="flex gap-6">
+                    <div className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-3">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex-1 flex">
+                          <Link href="/" className="flex gap-2 items-center">
+                            <div className="text-2xl">🐬</div>
+                            <div
+                              className={`transition-all duration-300 ease-in-out overflow-hidden ${"w-auto opacity-100"}`}
+                            >
+                              <h2 className="font-noto text-lg font-normal text-gray-800 whitespace-nowrap">
+                                Cosmic Dolphin
+                              </h2>
                             </div>
-                          </div>
+                          </Link>
+                          <CosmicMenu />
+                        </div>
+                        <div className="flex-1 flex justify-end">
                           <div className="flex items-center space-x-2">
-                            <HeaderAuth />
+                            <NewNoteButton />
                           </div>
                         </div>
-                      </div>
-                      <div className="py-2">
-                        <SidebarTrigger
-                          size="lg"
-                          variant="outline"
-                          className="w-10 h-full"
-                        />
+                        <div className="flex items-center space-x-2">
+                          <HeaderAuth />
+                        </div>
                       </div>
                     </div>
-                    <div className="flex-1 max-w-screen-lg mx-auto">
-                      {children}
-                    </div>
-                    <div className="h-2"></div>
                   </div>
-                  <AppSidebar />
-                </main>
-
-                {/* Mobile Layout */}
-                <main className="md:hidden flex flex-col min-h-screen">
-                  {/* Content area with padding for fixed header and bottom nav */}
-                  <div className="flex-1 pt-20 pb-28 px-4">
-                    <div className="max-w-screen-sm mx-auto">{children}</div>
+                  <div className="flex-1 max-w-screen-lg mx-auto">
+                    {children}
                   </div>
-                </main>
+                  <div className="h-2"></div>
+                </div>
+              </main>
 
-                {/* Mobile Bottom Navigation */}
-                <BottomNavigation />
-              </SidebarProvider>
+              {/* Mobile Layout */}
+              <main className="md:hidden flex flex-col min-h-screen">
+                {/* Content area with padding for fixed header and bottom nav */}
+                <div className="flex-1 pt-20 pb-28 px-4">
+                  <div className="max-w-screen-sm mx-auto">{children}</div>
+                </div>
+              </main>
+
+              {/* Mobile Bottom Navigation */}
+              <BottomNavigation />
             </ThemeProvider>
           </Body>
         </ReduxProvider>
