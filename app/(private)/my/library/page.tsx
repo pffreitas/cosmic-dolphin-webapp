@@ -3,49 +3,58 @@ import { Bookmark } from "@cosmic-dolphin/api";
 import Link from "next/link";
 import { Suspense } from "react";
 
-const NoteCard = ({ bookmark }: { bookmark: Bookmark }) => {
+const BookmarkCard = ({ bookmark }: { bookmark: Bookmark }) => {
   return (
-    <Link href={`/bookmarks/${bookmark.id}`}>
-      <div className="p-4">
-        <div className="grow default font-sans text-base font-medium text-textMain dark:text-textMainDark selection:bg-super/50 selection:text-textMain dark:selection:bg-superDuper/10 dark:selection:text-superDark">
-          <div className="line-clamp-1 break-all transition duration-300 md:group-hover:text-super md:dark:group-hover:text-superDark">
+    <div className="w-full min-w-48 sm:w-64 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border border-gray-200 p-3">
+      <Link href={`/bookmarks/${bookmark.id}`}>
+        <div className="flex flex-col gap-2">
+          <div className="h-10 line-clamp-2 break-words transition duration-300 font-medium text-sm leading-tight">
             {bookmark.title}
           </div>
+          {bookmark.metadata?.openGraph?.image && (
+            <img
+              src={bookmark.metadata.openGraph.image}
+              alt={bookmark.title}
+              className="w-full h-24 object-cover rounded-md border border-teal-300"
+            />
+          )}
+          {bookmark.cosmicSummary ? (
+            <div className="h-12 line-clamp-3 text-xs text-textOff leading-4">
+              {bookmark.cosmicSummary}
+            </div>
+          ) : (
+            <div className="h-12"></div>
+          )}
         </div>
-        <div className="break-word mt-two line-clamp-2 text-balance light font-sans text-sm text-textOff dark:text-textOffDark selection:bg-super/50 selection:text-textMain dark:selection:bg-superDuper/10 dark:selection:text-superDark">
-          {bookmark.cosmicSummary}
-        </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 };
 
 async function BookmarksList() {
   const bookmarks = await BookmarksAPI.list();
 
-  console.log(bookmarks);
   return (
-    <div className="flex gap-2 flex-col">
+    <div className="flex flex-wrap gap-4 p-4">
       {bookmarks?.map((bookmark: Bookmark) => (
-        <div key={bookmark.id}>
-          <NoteCard bookmark={bookmark} />
-          <div className="border-b border-gray-300" />
-        </div>
+        <BookmarkCard key={bookmark.id} bookmark={bookmark} />
       ))}
     </div>
   );
 }
 
 const LoadingBookmarks = () => (
-  <div className="flex gap-2 flex-col">
-    {Array.from({ length: 3 }).map((_, i) => (
-      <div key={i} className="animate-pulse">
-        <div className="p-4">
-          <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded mb-2 w-3/4"></div>
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mt-1"></div>
+  <div className="flex flex-wrap gap-4 p-4">
+    {Array.from({ length: 6 }).map((_, i) => (
+      <div
+        key={i}
+        className="max-w-48 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700 animate-pulse"
+      >
+        <div className="h-24 bg-gray-200 dark:bg-gray-700"></div>
+        <div className="p-3">
+          <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+          <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded"></div>
         </div>
-        <div className="border-b border-gray-300" />
       </div>
     ))}
   </div>
