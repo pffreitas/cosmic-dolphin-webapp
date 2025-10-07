@@ -28,7 +28,8 @@ export default function NewBookmarkButton({}: NewBookmarkButtonProps) {
     if (createBookmark.fulfilled.match(result)) {
       setShowOverlay(false);
       setUrl("");
-      router.push(`/bookmarks/${result.payload.id}`);
+      const bookmarkId = result.payload;
+      router.push(`/bookmarks/${bookmarkId}`);
     }
   };
 

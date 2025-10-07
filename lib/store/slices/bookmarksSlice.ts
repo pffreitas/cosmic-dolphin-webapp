@@ -22,8 +22,8 @@ export const createBookmark = createAsyncThunk(
   "bookmarks/create",
   async (bookmarkData: CreateBookmarkRequest, { rejectWithValue }) => {
     try {
-      const response = await BookmarksClientAPI.create(bookmarkData);
-      return response.bookmark;
+      const bookmarkId = await BookmarksClientAPI.create(bookmarkData);
+      return bookmarkId;
     } catch (error: any) {
       return rejectWithValue(error.message || "Failed to create bookmark");
     }
@@ -60,9 +60,9 @@ const bookmarksSlice = createSlice({
       })
       .addCase(
         createBookmark.fulfilled,
-        (state, action: PayloadAction<Bookmark>) => {
+        (state, action: PayloadAction<string>) => {
           state.createLoading = false;
-          state.bookmarks.unshift(action.payload);
+          // Don't add to bookmarks list - bookmark will be fetched on the bookmark page
         }
       )
       .addCase(createBookmark.rejected, (state, action) => {

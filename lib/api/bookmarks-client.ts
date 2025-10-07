@@ -37,14 +37,14 @@ export namespace BookmarksClientAPI {
 
   export async function create(
     bookmarkData: CreateBookmarkRequest
-  ): Promise<CreateBookmarkResponse> {
+  ): Promise<string> {
     const bookmarksApi = await getApiInstance();
 
     try {
       const response = await bookmarksApi.bookmarksCreate({
         createBookmarkRequest: bookmarkData,
       });
-      return response;
+      return response.bookmark.id;
     } catch (error: any) {
       if (error?.response?.data?.error) {
         throw new Error(error.response.data.error);
