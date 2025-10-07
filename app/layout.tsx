@@ -6,7 +6,7 @@ import Body from "./body";
 import ReduxProvider from "@/components/providers/redux-provider";
 import Link from "next/link";
 import { CosmicMenu } from "@/components/cosmic-menu";
-import NewNoteButton from "@/components/sidebar/new-note";
+import NewBookmarkButton from "@/components/bookmark/new-bookmark";
 import { MobileHeader } from "@/components/mobile/mobile-header";
 import { BottomNavigation } from "@/components/mobile/bottom-nav";
 
@@ -84,7 +84,7 @@ export default async function RootLayout({
                         </div>
                         <div className="flex-1 flex justify-end">
                           <div className="flex items-center space-x-2">
-                            <NewNoteButton />
+                            <NewBookmarkButton />
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">

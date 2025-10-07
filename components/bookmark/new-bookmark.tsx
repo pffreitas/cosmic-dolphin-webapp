@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { createBookmark, clearErrors } from "@/lib/store/slices/bookmarksSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 
-interface NewNoteButtonProps {}
+interface NewBookmarkButtonProps {}
 
-export default function NewNoteButton({}: NewNoteButtonProps) {
+export default function NewBookmarkButton({}: NewBookmarkButtonProps) {
   const [showOverlay, setShowOverlay] = useState(false);
   const [url, setUrl] = useState("");
   const dispatch = useAppDispatch();
@@ -18,7 +18,7 @@ export default function NewNoteButton({}: NewNoteButtonProps) {
   const createError = useAppSelector((state) => state.bookmarks.createError);
 
   const handleCreateBookmark = async () => {
-    dispatch(clearErrors()); // Clear any previous errors
+    dispatch(clearErrors());
     const result = await dispatch(
       createBookmark({
         sourceUrl: url,
@@ -32,20 +32,20 @@ export default function NewNoteButton({}: NewNoteButtonProps) {
     }
   };
 
-  const handleNewNote = () => {
+  const handleNewBookmark = () => {
     setShowOverlay(true);
   };
 
   const handleOverlayClick = () => {
     setShowOverlay(false);
-    dispatch(clearErrors()); // Clear errors when closing overlay
+    dispatch(clearErrors());
   };
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.metaKey && event.key === "k") {
         event.preventDefault();
-        handleNewNote();
+        handleNewBookmark();
       }
     };
 
@@ -95,10 +95,10 @@ export default function NewNoteButton({}: NewNoteButtonProps) {
         </div>
       )}
       <button
-        id="new-note-button"
+        id="new-bookmark-button"
         className="flex-1 rounded-full bg-white/25 px-3 py-2 font-noto text-sm font-semibold text-teal-800 ring-1 ring-black/[0.08] ring-inset hover:bg-white/50 hover:ring-black/[0.13] flex justify-between"
         onClick={() => {
-          handleNewNote();
+          handleNewBookmark();
         }}
       >
         <div className="flex-1 mx-2">New Bookmark</div>

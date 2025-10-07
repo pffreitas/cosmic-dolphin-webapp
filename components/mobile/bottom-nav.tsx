@@ -44,10 +44,10 @@ export function BottomNavigation() {
 
   const handleAddClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    // Trigger the new note button functionality
-    const newNoteButton = document.getElementById("new-note-button");
-    if (newNoteButton) {
-      newNoteButton.click();
+    // Trigger the new bookmark button functionality
+    const newBookmarkButton = document.getElementById("new-bookmark-button");
+    if (newBookmarkButton) {
+      newBookmarkButton.click();
     }
   };
 
