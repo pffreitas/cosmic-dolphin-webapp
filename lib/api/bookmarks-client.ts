@@ -4,7 +4,9 @@ import {
   Bookmark,
   CreateBookmarkRequest,
   CreateBookmarkResponse,
+  SearchBookmarksResponse,
 } from "@cosmic-dolphin/api";
+import { SearchBookmarksQuery } from "@/lib/types/bookmark";
 import { createClient } from "@/utils/supabase/client";
 
 export namespace BookmarksClientAPI {
@@ -62,6 +64,24 @@ export namespace BookmarksClientAPI {
     } catch (error) {
       console.error("Error fetching bookmark by id", error);
       return null;
+    }
+  }
+
+  export async function search(
+    params: SearchBookmarksQuery
+  ): Promise<SearchBookmarksResponse> {
+    const bookmarksApi = await getApiInstance();
+
+    try {
+      const response = await bookmarksApi.bookmarksSearch({
+        query: params.query,
+        limit: params.limit,
+        offset: params.offset,
+      });
+      return response;
+    } catch (error) {
+      console.error("Error searching bookmarks", error);
+      return { bookmarks: [], total: 0 };
     }
   }
 }

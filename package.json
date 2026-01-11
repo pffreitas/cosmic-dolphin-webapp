@@ -6,7 +6,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@cosmic-dolphin/api": "^1.0.20250111020822",
+    "@cosmic-dolphin/api": "^1.0.20251007015318",
     "@lottiefiles/dotlottie-react": "^0.16.3",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-checkbox": "^1.1.1",

@@ -32,3 +32,9 @@ export interface BookmarkListParams {
   limit?: number;
   offset?: number;
 }
+
+export interface SearchBookmarksQuery {
+  query: string;
+  limit?: number;
+  offset?: number;
+}

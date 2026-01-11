@@ -1,5 +1,10 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import { Bookmark, CreateBookmarkRequest } from "@cosmic-dolphin/api";
+import {
+  Bookmark,
+  CreateBookmarkRequest,
+  SearchBookmarksResponse,
+} from "@cosmic-dolphin/api";
+import { SearchBookmarksQuery } from "@/lib/types/bookmark";
 import { BookmarksClientAPI } from "@/lib/api/bookmarks-client";
 
 interface BookmarksState {
@@ -8,6 +13,10 @@ interface BookmarksState {
   error: string | null;
   createLoading: boolean;
   createError: string | null;
+  searchResults: Bookmark[];
+  searchLoading: boolean;
+  searchError: string | null;
+  searchQuery: string;
 }
 
 const initialState: BookmarksState = {
@@ -16,6 +25,10 @@ const initialState: BookmarksState = {
   error: null,
   createLoading: false,
   createError: null,
+  searchResults: [],
+  searchLoading: false,
+  searchError: null,
+  searchQuery: "",
 };
 
 export const createBookmark = createAsyncThunk(
@@ -42,6 +55,18 @@ export const fetchBookmarks = createAsyncThunk(
   }
 );
 
+export const searchBookmarks = createAsyncThunk(
+  "bookmarks/search",
+  async (params: SearchBookmarksQuery, { rejectWithValue }) => {
+    try {
+      const response = await BookmarksClientAPI.search(params);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.message || "Failed to search bookmarks");
+    }
+  }
+);
+
 const bookmarksSlice = createSlice({
   name: "bookmarks",
   initialState,
@@ -49,6 +74,15 @@ const bookmarksSlice = createSlice({
     clearErrors: (state) => {
       state.error = null;
       state.createError = null;
+      state.searchError = null;
+    },
+    clearSearchResults: (state) => {
+      state.searchResults = [];
+      state.searchQuery = "";
+      state.searchError = null;
+    },
+    setSearchQuery: (state, action: PayloadAction<string>) => {
+      state.searchQuery = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -85,9 +119,26 @@ const bookmarksSlice = createSlice({
       .addCase(fetchBookmarks.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      // Search bookmarks
+      .addCase(searchBookmarks.pending, (state) => {
+        state.searchLoading = true;
+        state.searchError = null;
+      })
+      .addCase(
+        searchBookmarks.fulfilled,
+        (state, action: PayloadAction<SearchBookmarksResponse>) => {
+          state.searchLoading = false;
+          state.searchResults = action.payload.bookmarks;
+        }
+      )
+      .addCase(searchBookmarks.rejected, (state, action) => {
+        state.searchLoading = false;
+        state.searchError = action.payload as string;
       });
   },
 });
 
-export const { clearErrors } = bookmarksSlice.actions;
+export const { clearErrors, clearSearchResults, setSearchQuery } =
+  bookmarksSlice.actions;
 export default bookmarksSlice.reducer;
