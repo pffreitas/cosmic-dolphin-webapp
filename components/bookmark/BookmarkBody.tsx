@@ -8,7 +8,13 @@ import OpenGraphWebpage from "@/components/opengraph/OpenGraphWebpage";
 import CosmicLoading from "@/components/loading/CosmicLoading";
 import { ConnectionStatus } from "@/components/realtime/ConnectionStatus";
 import { Card, CardContent } from "@/components/ui/card";
-import { RefreshCcwIcon, ShareIcon, ThumbsUpIcon } from "lucide-react";
+import {
+  RefreshCcwIcon,
+  ShareIcon,
+  ThumbsUpIcon,
+  AlertCircleIcon,
+  Loader2Icon,
+} from "lucide-react";
 import { Action, Actions } from "@/components/ai-elements/actions";
 import { Separator } from "@/components/ui/separator";
 import { useSessionByBookmark } from "@/lib/store/realtimeSelectors";
@@ -27,14 +33,71 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useBookmarkRealtime } from "@/lib/hooks/useBookmarkRealtime";
+
+interface ProcessingStatusProps {
+  status: string;
+  error?: string;
+}
+
+const ProcessingStatusBanner = ({ status, error }: ProcessingStatusProps) => {
+  if (status === "idle" || status === "completed") {
+    return null;
+  }
+
+  if (status === "failed") {
+    return (
+      <Card className="border-red-200 bg-red-50">
+        <CardContent className="px-5 py-3">
+          <div className="flex flex-row gap-3 items-center">
+            <AlertCircleIcon className="size-5 text-red-500" />
+            <div className="flex flex-col">
+              <span className="text-sm font-medium text-red-700">
+                Processing failed
+              </span>
+              {error && (
+                <span className="text-xs text-red-600">{error}</span>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Processing status
+  return (
+    <Card className="border-blue-200 bg-blue-50">
+      <CardContent className="px-5 py-3">
+        <div className="flex flex-row gap-3 items-center">
+          <Loader2Icon className="size-5 text-blue-500 animate-spin" />
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-blue-700">
+              Processing bookmark...
+            </span>
+            <span className="text-xs text-blue-600">
+              AI is analyzing and summarizing the content
+            </span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 export const BookmarkBody = (props: { bookmark: Bookmark }) => {
   const dispatch = useAppDispatch();
   const { currentBookmark } = useAppSelector((state) => state.realtime);
   const [isImageGaleryDialogOpen, setIsImageGaleryDialogOpen] = useState(false);
 
+  // Subscribe to realtime updates for this specific bookmark
+  const { isConnected, isProcessing } = useBookmarkRealtime(props.bookmark.id, {
+    enabled: true,
+  });
+
   const activeSession = useSessionByBookmark(props.bookmark.id);
   console.log("session for bookmark", activeSession);
+  console.log("realtime connection:", { isConnected, isProcessing });
 
   useEffect(() => {
     if (
@@ -47,11 +110,23 @@ export const BookmarkBody = (props: { bookmark: Bookmark }) => {
 
   const bookmark = currentBookmark || props.bookmark;
 
+  // Determine processing status - check both the bookmark field and active session
+  const processingStatus =
+    (bookmark as any).processingStatus ||
+    (activeSession?.isLoading ? "processing" : "idle");
+
   return (
     <div className="flex flex-col gap-8">
       <ConnectionStatus />
 
-      {activeSession?.isLoading && (
+      {/* Processing Status Banner */}
+      <ProcessingStatusBanner
+        status={processingStatus}
+        error={(bookmark as any).processingError}
+      />
+
+      {/* Legacy loading indicator - show if session is loading but no processing status */}
+      {activeSession?.isLoading && processingStatus === "idle" && (
         <Card>
           <CardContent className="px-5 py-2">
             <div className="flex flex-row gap-6 h-8 items-stretch">
@@ -74,7 +149,7 @@ export const BookmarkBody = (props: { bookmark: Bookmark }) => {
         />
       )}
 
-      {bookmark.cosmicTags && (
+      {bookmark.cosmicTags && bookmark.cosmicTags.length > 0 && (
         <div className="flex flex-row flex-wrap gap-2">
           {bookmark.cosmicTags.map((tag) => (
             <Badge key={tag} variant="outline">
@@ -84,11 +159,25 @@ export const BookmarkBody = (props: { bookmark: Bookmark }) => {
         </div>
       )}
 
+      {/* Show streaming summary content */}
       {bookmark.cosmicSummary && (
-        <CosmicMarkdown body={bookmark.cosmicSummary} />
+        <div className="relative">
+          <CosmicMarkdown body={bookmark.cosmicSummary} />
+          {processingStatus === "processing" && (
+            <span className="inline-block w-2 h-4 bg-blue-500 animate-pulse ml-1" />
+          )}
+        </div>
       )}
 
-      {bookmark.cosmicImages && (
+      {/* Placeholder while waiting for summary */}
+      {!bookmark.cosmicSummary && processingStatus === "processing" && (
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Loader2Icon className="size-4 animate-spin" />
+          <span className="text-sm">Generating summary...</span>
+        </div>
+      )}
+
+      {bookmark.cosmicImages && bookmark.cosmicImages.length > 0 && (
         <div className="w-full">
           <Carousel className="w-full max-w-full">
             <CarouselContent className="-ml-1">

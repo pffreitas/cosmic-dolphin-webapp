@@ -377,6 +377,30 @@ const realtimeSlice = createSlice({
           });
           break;
 
+        case "bookmark.processing.started":
+          // Update bookmark with processing status
+          realtimeSlice.caseReducers.handleBookmarkUpdated(state, {
+            type: "handleBookmarkUpdated",
+            payload: event.data.bookmark,
+          });
+          break;
+
+        case "bookmark.processing.completed":
+          // Update bookmark with completed status
+          realtimeSlice.caseReducers.handleBookmarkUpdated(state, {
+            type: "handleBookmarkUpdated",
+            payload: event.data.bookmark,
+          });
+          break;
+
+        case "bookmark.processing.failed":
+          // Update bookmark with failed status
+          realtimeSlice.caseReducers.handleBookmarkUpdated(state, {
+            type: "handleBookmarkUpdated",
+            payload: event.data.bookmark,
+          });
+          break;
+
         case "task.started":
           realtimeSlice.caseReducers.handleTaskStarted(state, {
             type: "handleTaskStarted",

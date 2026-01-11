@@ -74,6 +74,9 @@ export interface UsagePart {
 
 export type RealtimeEventType =
   | "bookmark.updated"
+  | "bookmark.processing.started"
+  | "bookmark.processing.completed"
+  | "bookmark.processing.failed"
   | "task.started"
   | "task.completed"
   | "task.updated"
@@ -92,6 +95,28 @@ export interface RealtimeEvent {
 export interface BookmarkUpdatedEvent {
   type: "bookmark.updated";
   data: Bookmark;
+}
+
+export interface BookmarkProcessingStartedEvent {
+  type: "bookmark.processing.started";
+  data: {
+    bookmark: Bookmark;
+  };
+}
+
+export interface BookmarkProcessingCompletedEvent {
+  type: "bookmark.processing.completed";
+  data: {
+    bookmark: Bookmark;
+  };
+}
+
+export interface BookmarkProcessingFailedEvent {
+  type: "bookmark.processing.failed";
+  data: {
+    bookmark: Bookmark;
+    error: string;
+  };
 }
 
 export interface TaskStartedEvent {
@@ -175,6 +200,9 @@ export interface MessagePartUpdatedEvent {
 
 export type RealtimeEventPayload =
   | BookmarkUpdatedEvent
+  | BookmarkProcessingStartedEvent
+  | BookmarkProcessingCompletedEvent
+  | BookmarkProcessingFailedEvent
   | TaskStartedEvent
   | TaskCompletedEvent
   | TaskUpdatedEvent
