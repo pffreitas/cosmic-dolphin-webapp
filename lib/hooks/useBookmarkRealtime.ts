@@ -46,7 +46,7 @@ export function useBookmarkRealtime(
   // Check if this bookmark is currently processing
   const isProcessing =
     currentBookmark?.id === bookmarkId &&
-    currentBookmark?.processingStatus === "processing";
+    (currentBookmark as any)?.processingStatus === "processing";
 
   const handleRealtimeEvent = useCallback(
     (payload: any) => {
