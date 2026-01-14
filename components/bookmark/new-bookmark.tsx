@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createBookmark, clearErrors } from "@/lib/store/slices/bookmarksSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
+import { Bookmark } from "lucide-react";
 
 interface NewBookmarkButtonProps {}
 
@@ -97,20 +98,13 @@ export default function NewBookmarkButton({}: NewBookmarkButtonProps) {
       )}
       <button
         id="new-bookmark-button"
-        className="flex-1 rounded-full bg-white/25 px-3 py-2 font-noto text-sm font-semibold text-teal-800 ring-1 ring-black/[0.08] ring-inset hover:bg-white/50 hover:ring-black/[0.13] flex justify-between"
+        className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-noto text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors"
         onClick={() => {
           handleNewBookmark();
         }}
       >
-        <div className="flex-1 mx-2">New Bookmark</div>
-        <div className="flex gap-1">
-          <span className="flex font-thin uppercase h-5 w-5 items-center justify-center rounded border font-mono text-xs border-borderMain/50 ring-borderMain/50 divide-borderMain/50 dark:divide-borderMainDark/50  dark:ring-borderMainDark/50 dark:border-borderMainDark/50 bg-transparent00">
-            ⌘
-          </span>
-          <span className="flex font-thin uppercase h-5 w-5 items-center justify-center rounded border font-mono text-xs border-borderMain/50 ring-borderMain/50 divide-borderMain/50 dark:divide-borderMainDark/50  dark:ring-borderMainDark/50 dark:border-borderMainDark/50 bg-transparent00">
-            k
-          </span>
-        </div>
+        <Bookmark size={16} />
+        Save Bookmark
       </button>
     </>
   );

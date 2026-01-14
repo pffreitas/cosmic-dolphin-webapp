@@ -87,11 +87,9 @@ export default async function RootLayout({
                             </Link>
                             <CosmicMenu />
                           </div>
-                          <div className="flex-1 flex justify-center">
-                            <CommandDialogTrigger />
-                          </div>
                           <div className="flex-1 flex justify-end">
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center gap-3">
+                              <CommandDialogTrigger />
                               <NewBookmarkButton />
                             </div>
                           </div>
