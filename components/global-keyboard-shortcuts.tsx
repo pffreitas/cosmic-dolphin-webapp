@@ -15,8 +15,8 @@ export function GlobalKeyboardShortcuts() {
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Cmd/Ctrl + J to toggle command dialog
-      if (e.key === "j" && (e.metaKey || e.ctrlKey)) {
+      // Cmd/Ctrl + / to toggle command dialog
+      if (e.key === "/" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         toggle();
       }
