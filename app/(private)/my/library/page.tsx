@@ -15,9 +15,14 @@ function extractDomain(url: string): string {
 }
 
 const BookmarkCard = ({ bookmark }: { bookmark: Bookmark }) => {
-  const siteName = bookmark.metadata?.openGraph?.siteName || extractDomain(bookmark.sourceUrl || "");
+  const siteName =
+    bookmark.metadata?.openGraph?.siteName ||
+    extractDomain(bookmark.sourceUrl || "");
   const image = bookmark.metadata?.openGraph?.image;
-  const description = bookmark.cosmicSummary || bookmark.metadata?.openGraph?.description || "";
+  const description =
+    bookmark.cosmicBriefSummary ||
+    bookmark.metadata?.openGraph?.description ||
+    "";
 
   return (
     <article className="group py-6 border-b border-gray-100 dark:border-gray-800 last:border-b-0">
@@ -33,7 +38,10 @@ const BookmarkCard = ({ bookmark }: { bookmark: Bookmark }) => {
                 </span>
               </div>
               <span className="text-gray-600 dark:text-gray-400">
-                In <span className="font-medium text-gray-900 dark:text-gray-100">{siteName}</span>
+                In{" "}
+                <span className="font-medium text-gray-900 dark:text-gray-100">
+                  {siteName}
+                </span>
               </span>
             </div>
           )}
@@ -47,7 +55,7 @@ const BookmarkCard = ({ bookmark }: { bookmark: Bookmark }) => {
 
           {/* Description */}
           {description && (
-            <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base leading-relaxed line-clamp-2">
+            <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base leading-relaxed">
               {description}
             </p>
           )}
@@ -66,7 +74,6 @@ const BookmarkCard = ({ bookmark }: { bookmark: Bookmark }) => {
               ))}
             </div>
           )}
-
         </div>
 
         {/* Thumbnail */}
@@ -117,7 +124,10 @@ async function BookmarksList() {
 const LoadingBookmarks = () => (
   <div className="divide-y divide-gray-100 dark:divide-gray-800">
     {Array.from({ length: 5 }).map((_, i) => (
-      <article key={i} className="group py-6 border-b border-gray-100 dark:border-gray-800 last:border-b-0 animate-pulse">
+      <article
+        key={i}
+        className="group py-6 border-b border-gray-100 dark:border-gray-800 last:border-b-0 animate-pulse"
+      >
         <div className="flex gap-6">
           <div className="flex-1 min-w-0 flex flex-col gap-2">
             {/* Publication header skeleton - matches: flex items-center gap-2 text-sm */}

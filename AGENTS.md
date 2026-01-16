@@ -2,10 +2,37 @@
 
 ## Commands
 
+- `npm install` - Install dependencies and generate API client (runs postinstall hook)
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm start` - Start production server
+- `npm run apispec` - Regenerate API client from TypeSpec definitions
 - No test commands configured - check with user for testing strategy
+
+## API Specification
+
+The API client (`@cosmic-dolphin/api`) is generated from TypeSpec definitions located in `packages/apispec/`.
+
+### Structure
+
+- `packages/apispec/*.tsp` - TypeSpec definition files (source of truth)
+- `packages/apispec/tspconfig.yaml` - TypeSpec compiler config
+- `packages/apispec/client/` - Generated TypeScript client (auto-generated, do not edit)
+
+### Regenerating the Client
+
+When you modify the TypeSpec files, run:
+
+```bash
+npm run apispec
+```
+
+This will:
+1. Compile TypeSpec to OpenAPI spec
+2. Generate TypeScript client from OpenAPI
+3. Build the client package
+
+The client is automatically regenerated during `npm install` via the postinstall hook.
 
 ## Code Style Guidelines
 

@@ -13,13 +13,14 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   
   // Build message object from search params
-  const message: Message = searchParams.get("error")
-    ? { error: searchParams.get("error")! }
-    : searchParams.get("success")
-    ? { success: searchParams.get("success")! }
-    : searchParams.get("message")
-    ? { message: searchParams.get("message")! }
-    : {};
+  const error = searchParams.get("error");
+  const success = searchParams.get("success");
+  const messageParam = searchParams.get("message");
+
+  let message: Message = { message: "" };
+  if (error) message = { error };
+  if (success) message = { success };
+  if (messageParam) message = { message: messageParam };
 
   // Show only the message if there's a message parameter
   if (searchParams.get("message")) {

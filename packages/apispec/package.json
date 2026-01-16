@@ -1,0 +1,19 @@
+{
+  "name": "@cosmic-dolphin/apispec",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "compile": "tsp compile .",
+    "generate:client": "npx @openapitools/openapi-generator-cli generate -i tsp-output/@typespec/openapi3/openapi.yaml -g typescript-fetch -o ./client --git-user-id=pffreitas --git-repo-id=cosmic-dolphin-apispec --additional-properties=npmName=@cosmic-dolphin/api,npmVersion=1.0.0,supportsES6=true,typescriptThreePlus=true",
+    "build:client": "cd client && npm run build",
+    "generate": "npm run compile && npm run generate:client && npm run build:client"
+  },
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.13.4",
+    "@typespec/compiler": "^0.61.0",
+    "@typespec/http": "^0.61.0",
+    "@typespec/openapi3": "^0.61.0",
+    "@typespec/rest": "^0.61.0"
+  }
+}
