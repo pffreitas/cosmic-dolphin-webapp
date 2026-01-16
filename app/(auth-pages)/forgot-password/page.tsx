@@ -10,13 +10,13 @@ export default function ForgotPassword() {
   const searchParams = useSearchParams();
   
   // Build message object from search params
-  const message: Message = searchParams.get("error")
+  const message: Message | undefined = searchParams.get("error")
     ? { error: searchParams.get("error")! }
     : searchParams.get("success")
     ? { success: searchParams.get("success")! }
     : searchParams.get("message")
     ? { message: searchParams.get("message")! }
-    : {};
+    : undefined;
 
   return (
     <div className="w-full">
@@ -53,7 +53,7 @@ export default function ForgotPassword() {
           Reset Password
         </button>
 
-        <FormMessage message={message} />
+        {message && <FormMessage message={message} />}
       </form>
 
       {/* Back to sign in link */}
