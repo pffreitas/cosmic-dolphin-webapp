@@ -15,6 +15,12 @@ function extractDomain(url: string): string {
 }
 
 const BookmarkCard = ({ bookmark }: { bookmark: Bookmark }) => {
+  // Get the immediate (last) collection from the path
+  const immediateCollection = bookmark.collectionPath?.length
+    ? bookmark.collectionPath[bookmark.collectionPath.length - 1]
+    : null;
+  const collectionName = immediateCollection?.name;
+
   const siteName =
     bookmark.metadata?.openGraph?.siteName ||
     extractDomain(bookmark.sourceUrl || "");
@@ -24,23 +30,26 @@ const BookmarkCard = ({ bookmark }: { bookmark: Bookmark }) => {
     bookmark.metadata?.openGraph?.description ||
     "";
 
+  // Display collection name if available, otherwise fall back to site name
+  const displayName = collectionName || siteName;
+
   return (
     <article className="group py-6 border-b border-gray-100 dark:border-gray-800 last:border-b-0">
       <div className="flex gap-6">
         {/* Content */}
         <div className="flex-1 min-w-0 flex flex-col gap-2">
           {/* Publication header */}
-          {siteName && (
+          {displayName && (
             <div className="flex items-center gap-2 text-sm">
               <div className="w-5 h-5 rounded-sm bg-gradient-to-br from-gray-700 to-gray-900 dark:from-gray-300 dark:to-gray-500 flex items-center justify-center">
                 <span className="text-[10px] font-bold text-white dark:text-gray-900 uppercase">
-                  {siteName.charAt(0)}
+                  {displayName.charAt(0)}
                 </span>
               </div>
               <span className="text-gray-600 dark:text-gray-400">
                 In{" "}
                 <span className="font-medium text-gray-900 dark:text-gray-100">
-                  {siteName}
+                  {displayName}
                 </span>
               </span>
             </div>

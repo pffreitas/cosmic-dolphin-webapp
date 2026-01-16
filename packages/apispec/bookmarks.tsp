@@ -16,10 +16,17 @@ model Collection {
     isPublic?: boolean;
 }
 
+@doc("Path item for breadcrumb navigation in collection hierarchy")
+model CollectionPathItem {
+    id: string;
+    name: string;
+}
+
 model Bookmark {
     id: string;
     sourceUrl: string;
     collectionId?: string;
+    collectionPath?: CollectionPathItem[];
     title?: string;
     isArchived?: boolean;
     isFavorite?: boolean;
