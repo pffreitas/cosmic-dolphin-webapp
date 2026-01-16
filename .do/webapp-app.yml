@@ -22,13 +22,13 @@ envs:
     value: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
   - key: NEXT_PUBLIC_REDIRECT_URL
     scope: RUN_AND_BUILD_TIME
-    value: https://cosmic-dolphin.com/auth/callback
+    value: ${NEXT_PUBLIC_REDIRECT_URL}
   - key: NEXT_PUBLIC_BASE_URL
     scope: RUN_AND_BUILD_TIME
-    value: https://cosmic-dolphin.com
+    value: ${NEXT_PUBLIC_BASE_URL}
   - key: HOST
     scope: RUN_AND_BUILD_TIME
-    value: cosmic-dolphin.com
+    value: ${HOST}
   - key: NEXT_PUBLIC_API_URL
     scope: RUN_AND_BUILD_TIME
     value: ${NEXT_PUBLIC_API_URL}
