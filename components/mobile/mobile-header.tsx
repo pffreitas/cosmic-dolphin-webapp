@@ -14,7 +14,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { signOutAction } from "@/app/actions";
 
-export function MobileHeader() {
+interface MobileHeaderProps {
+  isLoggedIn?: boolean;
+}
+
+export function MobileHeader({ isLoggedIn: initialLoggedIn }: MobileHeaderProps) {
   const isMobile = useIsMobile();
   const [user, setUser] = useState<SupabaseUser | null>(null);
 
@@ -41,9 +45,12 @@ export function MobileHeader() {
 
   if (!isMobile) return null;
 
+  // Use client-side user state if available, fallback to server prop
+  const isAuthenticated = user !== null || initialLoggedIn;
+
   return (
-    <div className="fixed top-0 left-0 right-0 z-40  backdrop-blur-md border-gray-100 md:hidden ">
-      <div className="flex items-center justify-between px-4 py-3">
+    <div className="fixed top-0 left-0 right-0 z-40 backdrop-blur-md border-gray-100 md:hidden">
+      <div className="flex items-center justify-between px-4 h-16">
         {/* Left - Cosmic Dolphin branding */}
         <Link href="/" className="flex items-center gap-2">
           <div className="text-xl">🐬</div>
@@ -54,13 +61,16 @@ export function MobileHeader() {
 
         {/* Right - Search and Profile icons */}
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-10 h-10 rounded-full bg-white/50 backdrop-blur-sm  shadow-lg"
-          >
-            <Search size={18} className="text-gray-700" />
-          </Button>
+          {/* Only show search when logged in */}
+          {isAuthenticated && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-10 h-10 rounded-full bg-white/50 backdrop-blur-sm  shadow-lg"
+            >
+              <Search size={18} className="text-gray-700" />
+            </Button>
+          )}
 
           {user ? (
             <DropdownMenu>

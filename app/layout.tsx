@@ -13,12 +13,20 @@ import { CosmicMenu } from "@/components/cosmic-menu";
 import NewBookmarkButton from "@/components/bookmark/new-bookmark";
 import { MobileHeader } from "@/components/mobile/mobile-header";
 import { BottomNavigation } from "@/components/mobile/bottom-nav";
+import { createClient } from "@/utils/supabase/server";
 
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const isLoggedIn = !!user;
+
   return (
     <html lang="en" className={GeistSans.className} suppressHydrationWarning>
       <head>
@@ -66,14 +74,14 @@ export default async function RootLayout({
                 disableTransitionOnChange
               >
                 {/* Mobile Header */}
-                <MobileHeader />
+                <MobileHeader isLoggedIn={isLoggedIn} />
 
                 {/* Desktop Layout */}
                 <main className="hidden md:flex w-full h-full p-2">
                   <div className="w-full mx-auto flex flex-col gap-6">
                     <div className="flex gap-6">
                       <div className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-3">
-                        <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center justify-between gap-4 h-10">
                           <div className="flex-1 flex">
                             <Link href="/" className="flex gap-2 items-center">
                               <div className="text-2xl">🐬</div>
@@ -85,14 +93,16 @@ export default async function RootLayout({
                                 </h2>
                               </div>
                             </Link>
-                            <CosmicMenu />
+                            {isLoggedIn && <CosmicMenu />}
                           </div>
-                          <div className="flex-1 flex justify-end">
-                            <div className="flex items-center gap-3">
-                              <CommandDialogTrigger />
-                              <NewBookmarkButton />
+                          {isLoggedIn && (
+                            <div className="flex-1 flex justify-end">
+                              <div className="flex items-center gap-3">
+                                <CommandDialogTrigger />
+                                <NewBookmarkButton />
+                              </div>
                             </div>
-                          </div>
+                          )}
                           <div className="flex items-center space-x-2">
                             <HeaderAuth />
                           </div>
@@ -109,13 +119,13 @@ export default async function RootLayout({
                 {/* Mobile Layout */}
                 <main className="md:hidden flex flex-col min-h-screen">
                   {/* Content area with padding for fixed header and bottom nav */}
-                  <div className="flex-1 pt-20 pb-28 px-4">
+                  <div className={`flex-1 pt-20 ${isLoggedIn ? 'pb-28' : 'pb-8'} px-4`}>
                     <div className="max-w-screen-sm mx-auto">{children}</div>
                   </div>
                 </main>
 
-                {/* Mobile Bottom Navigation */}
-                <BottomNavigation />
+                {/* Mobile Bottom Navigation - Only show when logged in */}
+                {isLoggedIn && <BottomNavigation />}
 
                 {/* Global Command Dialog - Desktop Only */}
                 <GlobalCommandDialog />
